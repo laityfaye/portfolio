@@ -12,7 +12,7 @@ import {
 } from 'react-icons/fa';
 import { useTheme } from '../context/ThemeContext';
 
-const Contact = () => {
+const Contact = ({ data = {} }) => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
   const { theme, isDarkMode } = useTheme();
@@ -24,32 +24,58 @@ const Contact = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const contactInfo = [
+  // Safe parsing for objects - handle JSON strings or null
+  const parseObjectIfNeeded = (value, defaultValue) => {
+    if (!value) return defaultValue;
+    if (typeof value === 'object' && !Array.isArray(value)) return value;
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        return typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : defaultValue;
+      } catch {
+        return defaultValue;
+      }
+    }
+    return defaultValue;
+  };
+
+  // Extraire les donnees du portfolio
+  const {
+    contact_info: rawContactInfo,
+    social_links: rawSocialLinks
+  } = data;
+
+  const contact_info = parseObjectIfNeeded(rawContactInfo, { email: 'votre.email@example.com', phone: '+33 6 12 34 56 78', location: 'Paris, France' });
+  const social_links = parseObjectIfNeeded(rawSocialLinks, { github: '', linkedin: '', twitter: '' });
+
+  // Construire les informations de contact
+  const contactInfoList = [
     {
       icon: <FaEnvelope />,
       title: 'Email',
-      value: 'votre.email@example.com',
-      link: 'mailto:votre.email@example.com'
+      value: contact_info.email || 'votre.email@example.com',
+      link: contact_info.email ? `mailto:${contact_info.email}` : null
     },
     {
       icon: <FaPhone />,
-      title: 'Téléphone',
-      value: '+33 6 12 34 56 78',
-      link: 'tel:+33612345678'
+      title: 'Telephone',
+      value: contact_info.phone || '+33 6 12 34 56 78',
+      link: contact_info.phone ? `tel:${contact_info.phone.replace(/\s/g, '')}` : null
     },
     {
       icon: <FaMapMarkerAlt />,
       title: 'Localisation',
-      value: 'Paris, France',
+      value: contact_info.location || 'Paris, France',
       link: null
     }
-  ];
+  ].filter(info => info.value);
 
-  const socialLinks = [
-    { icon: <FaGithub />, href: 'https://github.com', label: 'GitHub', color: 'hover:text-gray-400' },
-    { icon: <FaLinkedin />, href: 'https://linkedin.com', label: 'LinkedIn', color: 'hover:text-blue-500' },
-    { icon: <FaTwitter />, href: 'https://twitter.com', label: 'Twitter', color: 'hover:text-sky-500' },
-  ];
+  // Construire les liens sociaux
+  const socialLinksList = [
+    social_links.github && { icon: <FaGithub />, href: social_links.github, label: 'GitHub', color: 'hover:text-gray-400' },
+    social_links.linkedin && { icon: <FaLinkedin />, href: social_links.linkedin, label: 'LinkedIn', color: 'hover:text-blue-500' },
+    social_links.twitter && { icon: <FaTwitter />, href: social_links.twitter, label: 'Twitter', color: 'hover:text-sky-500' },
+  ].filter(Boolean);
 
   const handleChange = (e) => {
     setFormData({
@@ -157,7 +183,7 @@ const Contact = () => {
 
             {/* Contact Information Cards */}
             <div className="space-y-4">
-              {contactInfo.map((info, index) => (
+              {contactInfoList.map((info, index) => (
                 <motion.div
                   key={index}
                   className="card flex items-center gap-4 group"
@@ -190,27 +216,29 @@ const Contact = () => {
             </div>
 
             {/* Social Links */}
-            <div>
-              <h4 className={`text-lg font-semibold mb-4 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                Suivez-moi
-              </h4>
-              <div className="flex gap-4">
-                {socialLinks.map((social, index) => (
-                  <motion.a
-                    key={index}
-                    href={social.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`glass-effect p-4 rounded-lg text-2xl transition-all duration-300 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} ${social.color}`}
-                    whileHover={{ scale: 1.1, y: -5 }}
-                    whileTap={{ scale: 0.95 }}
-                    aria-label={social.label}
-                  >
-                    {social.icon}
-                  </motion.a>
-                ))}
+            {socialLinksList.length > 0 && (
+              <div>
+                <h4 className={`text-lg font-semibold mb-4 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                  Suivez-moi
+                </h4>
+                <div className="flex gap-4">
+                  {socialLinksList.map((social, index) => (
+                    <motion.a
+                      key={index}
+                      href={social.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`glass-effect p-4 rounded-lg text-2xl transition-all duration-300 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} ${social.color}`}
+                      whileHover={{ scale: 1.1, y: -5 }}
+                      whileTap={{ scale: 0.95 }}
+                      aria-label={social.label}
+                    >
+                      {social.icon}
+                    </motion.a>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </motion.div>
 
           {/* Right Side - Contact Form */}

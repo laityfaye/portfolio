@@ -161,20 +161,27 @@ export const themes = {
   },
 };
 
-export const ThemeProvider = ({ children }) => {
+export const ThemeProvider = ({ children, initialTheme, initialMode, disableLocalStorage = false }) => {
   const [currentTheme, setCurrentTheme] = useState(() => {
+    if (initialTheme) return initialTheme;
+    if (disableLocalStorage) return 'cyan';
     const savedTheme = localStorage.getItem('portfolio-theme');
     return savedTheme || 'cyan';
   });
 
   const [isDarkMode, setIsDarkMode] = useState(() => {
+    if (typeof initialMode === 'boolean') return initialMode;
+    if (disableLocalStorage) return true; // Default to dark for public portfolios
     const savedMode = localStorage.getItem('portfolio-mode');
     return savedMode !== 'light';
   });
 
   useEffect(() => {
-    localStorage.setItem('portfolio-theme', currentTheme);
-    localStorage.setItem('portfolio-mode', isDarkMode ? 'dark' : 'light');
+    // Ne pas sauvegarder dans localStorage pour les portfolios publics
+    if (!disableLocalStorage) {
+      localStorage.setItem('portfolio-theme', currentTheme);
+      localStorage.setItem('portfolio-mode', isDarkMode ? 'dark' : 'light');
+    }
 
     // Update CSS variables
     const theme = themes[currentTheme];
@@ -189,7 +196,7 @@ export const ThemeProvider = ({ children }) => {
       document.documentElement.classList.add('light');
       document.documentElement.classList.remove('dark');
     }
-  }, [currentTheme, isDarkMode]);
+  }, [currentTheme, isDarkMode, disableLocalStorage]);
 
   const changeTheme = (themeName) => {
     setCurrentTheme(themeName);

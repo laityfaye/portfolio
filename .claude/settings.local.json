@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(composer create-project:*)",
+      "Bash(dir)",
+      "Bash(composer require:*)",
+      "Bash(dir:*)",
+      "Bash(php artisan config:publish:*)",
+      "Bash(npm install:*)",
+      "Bash(php artisan:*)",
+      "Bash(composer remove:*)",
+      "Bash(composer install:*)",
+      "Bash(composer dump-autoload:*)",
+      "Bash(npm run build:*)",
+      "Bash(more:*)"
+    ]
+  }
+}

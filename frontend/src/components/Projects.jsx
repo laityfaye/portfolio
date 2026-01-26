@@ -3,87 +3,94 @@ import { useInView } from 'framer-motion';
 import { useRef, useState } from 'react';
 import { FaGithub, FaExternalLinkAlt, FaCode, FaStar } from 'react-icons/fa';
 import { useTheme } from '../context/ThemeContext';
+import { getImageUrl } from '../utils/imageUtils';
 
-const Projects = () => {
+const Projects = ({ projects: rawProjects = [], socialLinks: rawSocialLinks = {} }) => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
   const [filter, setFilter] = useState('all');
   const { theme, isDarkMode } = useTheme();
 
+  // Safe parsing for arrays/objects - handle JSON strings or null
+  const parseArrayIfNeeded = (value, defaultValue) => {
+    if (!value) return defaultValue;
+    if (Array.isArray(value)) return value;
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed) ? parsed : defaultValue;
+      } catch {
+        return defaultValue;
+      }
+    }
+    return defaultValue;
+  };
+
+  const parseObjectIfNeeded = (value, defaultValue) => {
+    if (!value) return defaultValue;
+    if (typeof value === 'object' && !Array.isArray(value)) return value;
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        return typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : defaultValue;
+      } catch {
+        return defaultValue;
+      }
+    }
+    return defaultValue;
+  };
+
+  const propProjects = parseArrayIfNeeded(rawProjects, []);
+  const socialLinks = parseObjectIfNeeded(rawSocialLinks, {});
+
   const categories = ['all', 'web', 'mobile', 'fullstack'];
 
-  const projects = [
+  // Donnees par defaut si pas de projets
+  const defaultProjects = [
     {
       id: 1,
       title: 'E-Commerce Platform',
-      description: 'Plateforme de commerce électronique complète avec panier, paiement et gestion des commandes.',
+      description: 'Plateforme de commerce electronique complete avec panier, paiement et gestion des commandes.',
       image: 'https://images.unsplash.com/photo-1557821552-17105176677c?w=800&h=600&fit=crop',
       category: 'fullstack',
       tags: ['React', 'Node.js', 'MongoDB', 'Stripe'],
-      github: 'https://github.com',
-      demo: 'https://demo.com',
+      github_url: 'https://github.com',
+      demo_url: 'https://demo.com',
       featured: true
     },
     {
       id: 2,
       title: 'Task Management App',
-      description: 'Application de gestion de tâches collaborative avec temps réel et notifications.',
+      description: 'Application de gestion de taches collaborative avec temps reel et notifications.',
       image: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&h=600&fit=crop',
       category: 'web',
       tags: ['React', 'Firebase', 'Tailwind'],
-      github: 'https://github.com',
-      demo: 'https://demo.com',
+      github_url: 'https://github.com',
+      demo_url: 'https://demo.com',
       featured: false
     },
     {
       id: 3,
       title: 'Portfolio Designer',
-      description: 'Outil de création de portfolio en ligne avec éditeur drag-and-drop.',
+      description: 'Outil de creation de portfolio en ligne avec editeur drag-and-drop.',
       image: 'https://images.unsplash.com/photo-1467232004584-a241de8bcf5d?w=800&h=600&fit=crop',
       category: 'web',
       tags: ['Next.js', 'TypeScript', 'Prisma'],
-      github: 'https://github.com',
-      demo: 'https://demo.com',
-      featured: true
-    },
-    {
-      id: 4,
-      title: 'Social Media Dashboard',
-      description: 'Dashboard analytique pour réseaux sociaux avec graphiques interactifs.',
-      image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop',
-      category: 'fullstack',
-      tags: ['React', 'Express', 'PostgreSQL', 'Chart.js'],
-      github: 'https://github.com',
-      demo: 'https://demo.com',
-      featured: false
-    },
-    {
-      id: 5,
-      title: 'Fitness Tracking App',
-      description: 'Application mobile de suivi d\'entraînement avec objectifs personnalisés.',
-      image: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800&h=600&fit=crop',
-      category: 'mobile',
-      tags: ['React Native', 'Redux', 'Firebase'],
-      github: 'https://github.com',
-      demo: 'https://demo.com',
-      featured: false
-    },
-    {
-      id: 6,
-      title: 'AI Chat Assistant',
-      description: 'Assistant conversationnel intelligent utilisant des modèles de langage avancés.',
-      image: 'https://images.unsplash.com/photo-1531746790731-6c087fecd65a?w=800&h=600&fit=crop',
-      category: 'fullstack',
-      tags: ['React', 'Python', 'OpenAI', 'Docker'],
-      github: 'https://github.com',
-      demo: 'https://demo.com',
+      github_url: 'https://github.com',
+      demo_url: 'https://demo.com',
       featured: true
     }
   ];
 
+  // Utiliser les projets fournis ou les valeurs par defaut
+  const projects = propProjects.length > 0 ? propProjects : defaultProjects;
+
   const filteredProjects = filter === 'all'
     ? projects
     : projects.filter(project => project.category === filter);
+
+  // GitHub link from social links
+  const githubUrl = socialLinks?.github || 'https://github.com';
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -185,20 +192,42 @@ const Projects = () => {
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
           layout
         >
-          {filteredProjects.map((project, index) => (
-            <motion.div
-              key={project.id}
-              layout
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ duration: 0.3, delay: index * 0.1 }}
-              className="group relative"
-            >
-              <div className="card h-full flex flex-col overflow-hidden">
+          {filteredProjects.map((project, index) => {
+            const hasDemoUrl = project.demo_url && project.demo_url.trim() !== '';
+            
+            const handleCardClick = (e) => {
+              // Ne pas rediriger si on clique sur un lien ou un bouton
+              if (e.target.closest('a[href]') || e.target.closest('button')) {
+                return;
+              }
+              // Rediriger vers la démo si elle existe
+              if (hasDemoUrl) {
+                window.open(project.demo_url, '_blank', 'noopener,noreferrer');
+              }
+            };
+
+            return (
+              <motion.div
+                key={project.id}
+                layout
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.3, delay: index * 0.1 }}
+                className="group relative"
+              >
+                <motion.div
+                  className={`card h-full flex flex-col overflow-hidden ${hasDemoUrl ? 'cursor-pointer' : ''}`}
+                  whileHover={hasDemoUrl ? { scale: 1.02, y: -5 } : {}}
+                  whileTap={hasDemoUrl ? { scale: 0.98 } : {}}
+                  onClick={handleCardClick}
+                >
                 {/* Featured Badge */}
                 {project.featured && (
-                  <div className="absolute top-4 right-4 z-10">
+                  <div 
+                    className="absolute top-4 right-4 z-10"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <motion.div
                       className="glass-effect px-3 py-1 rounded-full flex items-center gap-1 text-yellow-400"
                       initial={{ scale: 0 }}
@@ -212,36 +241,54 @@ const Projects = () => {
                 )}
 
                 {/* Project Image */}
-                <div className="relative overflow-hidden rounded-lg mb-4 aspect-video">
+                <div className="relative overflow-hidden rounded-lg mb-4 aspect-video bg-gray-200 dark:bg-gray-800">
                   <img
-                    src={project.image}
+                    src={getImageUrl(project.image) || project.image}
                     alt={project.title}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    loading="lazy"
+                    decoding="async"
+                    onLoad={(e) => {
+                      e.target.style.opacity = '1';
+                    }}
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                    }}
+                    style={{ opacity: 0, transition: 'opacity 0.3s' }}
                   />
                   <div className={`absolute inset-0 bg-gradient-to-t ${isDarkMode ? 'from-dark-900 via-dark-900/50' : 'from-gray-900/20 via-gray-900/10'} to-transparent ${isDarkMode ? 'opacity-60 group-hover:opacity-80' : 'opacity-30 group-hover:opacity-40'} transition-opacity duration-300`} />
 
                   {/* Overlay Links */}
-                  <div className="absolute inset-0 flex items-center justify-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <motion.a
-                      href={project.github}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="glass-effect p-3 rounded-full text-white hover:bg-white/20 transition-colors"
-                      whileHover={{ scale: 1.1, rotate: 5 }}
-                      whileTap={{ scale: 0.9 }}
-                    >
-                      <FaGithub className="text-xl" />
-                    </motion.a>
-                    <motion.a
-                      href={project.demo}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="glass-effect p-3 rounded-full text-white hover:bg-white/20 transition-colors"
-                      whileHover={{ scale: 1.1, rotate: -5 }}
-                      whileTap={{ scale: 0.9 }}
-                    >
-                      <FaExternalLinkAlt className="text-xl" />
-                    </motion.a>
+                  <div 
+                    className="absolute inset-0 flex items-center justify-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {project.github_url && (
+                      <motion.a
+                        href={project.github_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="glass-effect p-3 rounded-full text-white hover:bg-white/20 transition-colors z-20"
+                        whileHover={{ scale: 1.1, rotate: 5 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <FaGithub className="text-xl" />
+                      </motion.a>
+                    )}
+                    {project.demo_url && (
+                      <motion.a
+                        href={project.demo_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="glass-effect p-3 rounded-full text-white hover:bg-white/20 transition-colors z-20"
+                        whileHover={{ scale: 1.1, rotate: -5 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <FaExternalLinkAlt className="text-xl" />
+                      </motion.a>
+                    )}
                   </div>
                 </div>
 
@@ -260,7 +307,7 @@ const Projects = () => {
 
                   {/* Tags */}
                   <div className="flex flex-wrap gap-2">
-                    {project.tags.map((tag) => (
+                    {parseArrayIfNeeded(project.tags, []).map((tag) => (
                       <span
                         key={tag}
                         className={`text-xs px-3 py-1 rounded-full border font-medium transition-all duration-300 ${
@@ -280,28 +327,31 @@ const Projects = () => {
                     ))}
                   </div>
                 </div>
-              </div>
+              </motion.div>
             </motion.div>
-          ))}
+            );
+          })}
         </motion.div>
 
         {/* View More */}
-        <motion.div
-          variants={itemVariants}
-          className="text-center mt-12"
-        >
-          <motion.a
-            href="https://github.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-secondary inline-flex items-center gap-2"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+        {githubUrl && (
+          <motion.div
+            variants={itemVariants}
+            className="text-center mt-12"
           >
-            <FaCode />
-            Voir plus sur GitHub
-          </motion.a>
-        </motion.div>
+            <motion.a
+              href={githubUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-secondary inline-flex items-center gap-2"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <FaCode />
+              Voir plus sur GitHub
+            </motion.a>
+          </motion.div>
+        )}
       </motion.div>
     </section>
   );

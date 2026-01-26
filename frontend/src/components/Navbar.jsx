@@ -5,10 +5,33 @@ import { FaGithub, FaLinkedin, FaTwitter, FaBars, FaTimes } from 'react-icons/fa
 import ThemeSelector from './ThemeSelector';
 import { useTheme } from '../context/ThemeContext';
 
-const Navbar = () => {
+const Navbar = ({ data = {}, hideThemeSelector = false }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { theme, isDarkMode } = useTheme();
+
+  // Safe parsing for objects - handle JSON strings or null
+  const parseObjectIfNeeded = (value, defaultValue) => {
+    if (!value) return defaultValue;
+    if (typeof value === 'object' && !Array.isArray(value)) return value;
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        return typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : defaultValue;
+      } catch {
+        return defaultValue;
+      }
+    }
+    return defaultValue;
+  };
+
+  // Extraire les donnees du portfolio
+  const {
+    brand_name = '<InnoSoft />',
+    social_links: rawSocialLinks
+  } = data;
+
+  const social_links = parseObjectIfNeeded(rawSocialLinks, { github: '', linkedin: '', twitter: '' });
 
   useEffect(() => {
     const handleScroll = () => {
@@ -20,17 +43,18 @@ const Navbar = () => {
 
   const navItems = [
     { name: 'Accueil', href: '#home' },
-    { name: 'À propos', href: '#about' },
-    { name: 'Compétences', href: '#skills' },
+    { name: 'A propos', href: '#about' },
+    { name: 'Competences', href: '#skills' },
     { name: 'Projets', href: '#projects' },
     { name: 'Contact', href: '#contact' },
   ];
 
-  const socialLinks = [
-    { icon: <FaGithub />, href: 'https://github.com', label: 'GitHub' },
-    { icon: <FaLinkedin />, href: 'https://linkedin.com', label: 'LinkedIn' },
-    { icon: <FaTwitter />, href: 'https://twitter.com', label: 'Twitter' },
-  ];
+  // Construire les liens sociaux dynamiquement
+  const socialLinksList = [
+    social_links.github && { icon: <FaGithub />, href: social_links.github, label: 'GitHub' },
+    social_links.linkedin && { icon: <FaLinkedin />, href: social_links.linkedin, label: 'LinkedIn' },
+    social_links.twitter && { icon: <FaTwitter />, href: social_links.twitter, label: 'Twitter' },
+  ].filter(Boolean);
 
   const scrollToSection = (e, href) => {
     e.preventDefault();
@@ -63,7 +87,7 @@ const Navbar = () => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            {'<InnoSoft />'}
+            {brand_name}
           </motion.a>
 
           {/* Desktop Navigation */}
@@ -90,7 +114,7 @@ const Navbar = () => {
 
           {/* Social Links & Theme Selector - Desktop */}
           <div className="hidden md:flex items-center space-x-4">
-            {socialLinks.map((social, index) => (
+            {socialLinksList.map((social, index) => (
               <motion.a
                 key={social.label}
                 href={social.href}
@@ -109,18 +133,20 @@ const Navbar = () => {
                 {social.icon}
               </motion.a>
             ))}
-            <motion.div
-              initial={{ opacity: 0, scale: 0 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.8 }}
-            >
-              <ThemeSelector />
-            </motion.div>
+            {!hideThemeSelector && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.8 }}
+              >
+                <ThemeSelector />
+              </motion.div>
+            )}
           </div>
 
           {/* Mobile Menu Button & Theme Selector */}
           <div className="md:hidden flex items-center space-x-3">
-            <ThemeSelector />
+            {!hideThemeSelector && <ThemeSelector />}
             <motion.button
               className={`text-2xl transition-colors ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}
               style={{ '--hover-color': theme.primary.main }}
@@ -159,22 +185,24 @@ const Navbar = () => {
               {item.name}
             </a>
           ))}
-          <div className={`flex space-x-6 pt-4 border-t ${isDarkMode ? 'border-white/10' : 'border-black/10'}`}>
-            {socialLinks.map((social) => (
-              <a
-                key={social.label}
-                href={social.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`transition-colors duration-300 text-xl ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}
-                onMouseEnter={(e) => e.currentTarget.style.color = theme.primary.main}
-                onMouseLeave={(e) => e.currentTarget.style.color = isDarkMode ? 'rgb(156, 163, 175)' : 'rgb(107, 114, 128)'}
-                aria-label={social.label}
-              >
-                {social.icon}
-              </a>
-            ))}
-          </div>
+          {socialLinksList.length > 0 && (
+            <div className={`flex space-x-6 pt-4 border-t ${isDarkMode ? 'border-white/10' : 'border-black/10'}`}>
+              {socialLinksList.map((social) => (
+                <a
+                  key={social.label}
+                  href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`transition-colors duration-300 text-xl ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}
+                  onMouseEnter={(e) => e.currentTarget.style.color = theme.primary.main}
+                  onMouseLeave={(e) => e.currentTarget.style.color = isDarkMode ? 'rgb(156, 163, 175)' : 'rgb(107, 114, 128)'}
+                  aria-label={social.label}
+                >
+                  {social.icon}
+                </a>
+              ))}
+            </div>
+          )}
         </div>
       </motion.div>
     </motion.nav>

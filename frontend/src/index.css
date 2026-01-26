@@ -213,6 +213,7 @@
     transition: opacity 0.5s;
     background-size: 400%;
     animation: gradient-rotate 4s linear infinite;
+    pointer-events: none;
   }
 
   .card:hover::before {
@@ -230,10 +231,26 @@
     border-radius: 1rem;
     opacity: 0;
     transition: opacity 0.5s;
+    pointer-events: none;
   }
 
   .card:hover::after {
     opacity: 1;
+  }
+
+  /* Form inputs - ensure they are interactive */
+  .card input,
+  .card textarea,
+  .card select,
+  .card button {
+    position: relative;
+    z-index: 10;
+  }
+
+  .glass-effect input,
+  .glass-effect textarea,
+  .glass-effect select {
+    background: transparent;
   }
 
   .skill-badge {
@@ -308,6 +325,32 @@
   .transform-3d {
     transform-style: preserve-3d;
   }
+}
+
+/* Thin scrollbar for sidebars */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(107, 114, 128, 0.4);
+  border-radius: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: rgba(107, 114, 128, 0.6);
+}
+
+html.light .scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.5);
+}
+
+html.light .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.7);
 }
 
 /* Custom scrollbar with glow */

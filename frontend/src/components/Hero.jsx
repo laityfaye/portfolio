@@ -3,6 +3,7 @@ import { motion, useMotionValue, useTransform, useSpring, useInView } from 'fram
 import { FaArrowDown, FaCode, FaLaptopCode, FaRocket } from 'react-icons/fa';
 import { useEffect, useMemo, useRef } from 'react';
 import { useTheme } from '../context/ThemeContext';
+import { getProfileImageUrl } from '../utils/imageUtils';
 
 // Composant Counter animé
 const AnimatedCounter = ({ value, suffix = '', className }) => {
@@ -37,10 +38,42 @@ const generateParticleData = () => {
   }));
 };
 
-const Hero = () => {
+const Hero = ({ data = {} }) => {
   const { theme, isDarkMode } = useTheme();
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
+
+  // Valeurs par defaut si data non fourni
+  const defaultHeroStats = [
+    { value: 5, suffix: '+', label: "Annees d'experience" },
+    { value: 50, suffix: '+', label: 'Projets realises' },
+    { value: 100, suffix: '%', label: 'Satisfaction client' },
+  ];
+
+  const {
+    display_name = 'Votre Nom',
+    job_title = 'Ingenieur Logiciel',
+    hero_description = 'Je cree des experiences web exceptionnelles avec des technologies modernes. Passionne par le code propre, l\'innovation et la resolution de problemes complexes.',
+    profile_image = '/images/profile.jpeg',
+    hero_stats: rawHeroStats
+  } = data;
+
+  // Safe parsing for hero_stats - handle JSON strings or null
+  const parseIfNeeded = (value, defaultValue) => {
+    if (!value) return defaultValue;
+    if (Array.isArray(value)) return value;
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed) ? parsed : defaultValue;
+      } catch {
+        return defaultValue;
+      }
+    }
+    return defaultValue;
+  };
+
+  const hero_stats = parseIfNeeded(rawHeroStats, defaultHeroStats);
 
   const springConfig = { damping: 25, stiffness: 150 };
   const x = useSpring(mouseX, springConfig);
@@ -291,9 +324,15 @@ const Hero = () => {
 
                     {/* Photo de profil */}
                     <img
-                      src="/images/profile.jpeg"
-                      alt="Ingénieur Logiciel"
+                      src={getProfileImageUrl(profile_image)}
+                      alt={display_name}
                       className="w-full h-full object-cover"
+                      loading="eager"
+                      fetchPriority="high"
+                      decoding="async"
+                      onError={(e) => {
+                        e.target.src = '/images/profile.jpeg';
+                      }}
                     />
                   </div>
 
@@ -359,7 +398,7 @@ const Hero = () => {
                     ease: "easeInOut"
                   }}
                 >
-                  Votre Nom
+                  {display_name}
                 </motion.span>
               </motion.h1>
 
@@ -368,19 +407,18 @@ const Hero = () => {
                 variants={itemVariants}
                 className={`text-sm sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-2 sm:mb-6 ${isDarkMode ? 'text-gray-200' : 'text-gray-700'}`}
               >
-                <span className={`bg-gradient-to-r ${theme.gradient} bg-clip-text text-transparent`}>Ingénieur Logiciel</span>
+                <span className={`bg-gradient-to-r ${theme.gradient} bg-clip-text text-transparent`}>{job_title}</span>
               </motion.h2>
 
             </div>
           </div>
 
-          {/* Description et boutons - affichés en bas sur mobile */}
+          {/* Description et boutons - affiches en bas sur mobile */}
           <motion.div variants={itemVariants} className="mt-6 sm:mt-8 text-center">
             <motion.p
               className={`text-xs sm:text-base lg:text-xl mb-4 sm:mb-8 leading-relaxed max-w-3xl mx-auto ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}
             >
-              Je crée des <span className="font-semibold" style={{ color: theme.primary.main }}>expériences web exceptionnelles</span> avec des technologies modernes.
-              Passionné par le <span className="font-semibold" style={{ color: theme.primary.light }}>code propre</span>, l'innovation et la résolution de problèmes complexes.
+              {hero_description}
             </motion.p>
 
             <div className="flex flex-row gap-2 sm:gap-4 justify-center items-center">
@@ -408,11 +446,7 @@ const Hero = () => {
             variants={itemVariants}
             className="grid grid-cols-3 gap-2 sm:gap-8 max-w-5xl mx-auto perspective-1000 mt-8 sm:mt-16"
           >
-            {[
-              { value: 5, suffix: '+', label: "Années d'expérience" },
-              { value: 50, suffix: '+', label: 'Projets réalisés' },
-              { value: 100, suffix: '%', label: 'Satisfaction client' },
-            ].map((stat, index) => (
+            {hero_stats.map((stat, index) => (
               <motion.div
                 key={index}
                 className="glass-effect-strong rounded-xl sm:rounded-2xl p-2 sm:p-8 border relative overflow-hidden group transform-3d"

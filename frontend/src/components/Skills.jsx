@@ -1,73 +1,69 @@
 import { motion } from 'framer-motion';
 import { useInView } from 'framer-motion';
 import { useRef } from 'react';
-import {
-  FaReact,
-  FaNodeJs,
-  FaPython,
-  FaDocker,
-  FaGitAlt,
-  FaDatabase,
-  FaHtml5,
-  FaCss3Alt,
-  FaJs,
-} from 'react-icons/fa';
-import {
-  SiTypescript,
-  SiMongodb,
-  SiPostgresql,
-  SiTailwindcss,
-  SiNextdotjs,
-  SiExpress,
-  SiRedux,
-  SiGraphql,
-  SiFirebase,
-} from 'react-icons/si';
 import { useTheme } from '../context/ThemeContext';
+import { getIcon } from '../utils/iconMapper';
 
-const Skills = () => {
+const Skills = ({ skills: rawSkills = [] }) => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
   const { theme, isDarkMode } = useTheme();
 
-  const skillCategories = [
-    {
-      title: 'Frontend',
-      color: 'from-blue-500 to-cyan-500',
-      skills: [
-        { name: 'React', icon: <FaReact />, level: 95 },
-        { name: 'TypeScript', icon: <SiTypescript />, level: 90 },
-        { name: 'Next.js', icon: <SiNextdotjs />, level: 85 },
-        { name: 'Tailwind CSS', icon: <SiTailwindcss />, level: 92 },
-        { name: 'Redux', icon: <SiRedux />, level: 88 },
-        { name: 'HTML5', icon: <FaHtml5 />, level: 98 },
-        { name: 'CSS3', icon: <FaCss3Alt />, level: 95 },
-        { name: 'JavaScript', icon: <FaJs />, level: 93 },
-      ]
-    },
-    {
-      title: 'Backend',
-      color: 'from-green-500 to-emerald-500',
-      skills: [
-        { name: 'Node.js', icon: <FaNodeJs />, level: 90 },
-        { name: 'Express', icon: <SiExpress />, level: 88 },
-        { name: 'Python', icon: <FaPython />, level: 85 },
-        { name: 'GraphQL', icon: <SiGraphql />, level: 80 },
-      ]
-    },
-    {
-      title: 'Database & Tools',
-      color: 'from-purple-500 to-pink-500',
-      skills: [
-        { name: 'MongoDB', icon: <SiMongodb />, level: 87 },
-        { name: 'PostgreSQL', icon: <SiPostgresql />, level: 85 },
-        { name: 'Firebase', icon: <SiFirebase />, level: 82 },
-        { name: 'Docker', icon: <FaDocker />, level: 80 },
-        { name: 'Git', icon: <FaGitAlt />, level: 93 },
-        { name: 'Database', icon: <FaDatabase />, level: 75 },
-      ]
+  // Safe parsing for skills - handle JSON strings or null
+  const parseIfNeeded = (value, defaultValue) => {
+    if (!value) return defaultValue;
+    if (Array.isArray(value)) return value;
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed) ? parsed : defaultValue;
+      } catch {
+        return defaultValue;
+      }
     }
+    return defaultValue;
+  };
+
+  const skills = parseIfNeeded(rawSkills, []);
+
+  // Grouper les skills par categorie
+  const categories = [
+    { key: 'frontend', title: 'Frontend' },
+    { key: 'backend', title: 'Backend' },
+    { key: 'database_tools', title: 'Database & Tools' }
   ];
+
+  // Grouper les skills
+  const groupedSkills = skills.reduce((acc, skill) => {
+    const category = skill.category || 'frontend';
+    if (!acc[category]) acc[category] = [];
+    acc[category].push(skill);
+    return acc;
+  }, {});
+
+  // Donnees par defaut si pas de skills
+  const defaultSkills = {
+    frontend: [
+      { name: 'React', icon: 'FaReact', level: 95 },
+      { name: 'TypeScript', icon: 'SiTypescript', level: 90 },
+      { name: 'Next.js', icon: 'SiNextdotjs', level: 85 },
+      { name: 'Tailwind CSS', icon: 'SiTailwindcss', level: 92 },
+    ],
+    backend: [
+      { name: 'Node.js', icon: 'FaNodeJs', level: 90 },
+      { name: 'Express', icon: 'SiExpress', level: 88 },
+      { name: 'Python', icon: 'FaPython', level: 85 },
+    ],
+    database_tools: [
+      { name: 'MongoDB', icon: 'SiMongodb', level: 87 },
+      { name: 'PostgreSQL', icon: 'SiPostgresql', level: 85 },
+      { name: 'Docker', icon: 'FaDocker', level: 80 },
+      { name: 'Git', icon: 'FaGitAlt', level: 93 },
+    ]
+  };
+
+  // Utiliser les skills fournis ou les valeurs par defaut
+  const displaySkills = skills.length > 0 ? groupedSkills : defaultSkills;
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -143,72 +139,77 @@ const Skills = () => {
 
         {/* Skills Categories */}
         <div className="space-y-6 sm:space-y-12">
-          {skillCategories.map((category, categoryIndex) => (
-            <motion.div
-              key={category.title}
-              variants={itemVariants}
-              className="space-y-3 sm:space-y-6"
-            >
-              {/* Category Title */}
-              <h3 className="text-lg sm:text-3xl font-bold text-center sm:text-left">
-                <span className={`bg-gradient-to-r ${theme.gradient} bg-clip-text text-transparent`}>
-                  {category.title}
-                </span>
-              </h3>
+          {categories.map((category, categoryIndex) => {
+            const categorySkills = displaySkills[category.key] || [];
+            if (categorySkills.length === 0) return null;
 
-              {/* Skills Grid */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-                {category.skills.map((skill, skillIndex) => (
-                  <motion.div
-                    key={skill.name}
-                    className="card group relative overflow-hidden"
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
-                    transition={{ delay: categoryIndex * 0.2 + skillIndex * 0.05 }}
-                    whileHover={{ y: -5 }}
-                  >
-                    {/* Skill Icon & Name */}
-                    <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-4">
-                      <div className="text-2xl sm:text-4xl" style={{ color: theme.primary.main }}>
-                        {skill.icon}
-                      </div>
-                      <div>
-                        <h4 className={`text-xs sm:text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
-                          {skill.name}
-                        </h4>
-                      </div>
-                    </div>
+            return (
+              <motion.div
+                key={category.key}
+                variants={itemVariants}
+                className="space-y-3 sm:space-y-6"
+              >
+                {/* Category Title */}
+                <h3 className="text-lg sm:text-3xl font-bold text-center sm:text-left">
+                  <span className={`bg-gradient-to-r ${theme.gradient} bg-clip-text text-transparent`}>
+                    {category.title}
+                  </span>
+                </h3>
 
-                    {/* Progress Bar */}
-                    <div className="space-y-1 sm:space-y-2">
-                      <div className="flex justify-between text-[10px] sm:text-sm">
-                        <span className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>Niveau</span>
-                        <span className="font-semibold" style={{ color: theme.primary.main }}>{skill.level}%</span>
-                      </div>
-                      <div className={`h-1.5 sm:h-2 rounded-full overflow-hidden ${isDarkMode ? 'bg-dark-700' : 'bg-gray-200'}`}>
-                        <motion.div
-                          className={`h-full bg-gradient-to-r ${theme.gradient} rounded-full`}
-                          initial={{ width: 0 }}
-                          animate={isInView ? { width: `${skill.level}%` } : { width: 0 }}
-                          transition={{
-                            duration: 1,
-                            delay: categoryIndex * 0.2 + skillIndex * 0.05 + 0.3,
-                            ease: "easeOut"
-                          }}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Hover Effect Overlay */}
+                {/* Skills Grid */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+                  {categorySkills.map((skill, skillIndex) => (
                     <motion.div
-                      className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-300 pointer-events-none rounded-xl"
-                      style={{ background: `linear-gradient(to bottom right, ${theme.primary.main}, ${theme.primary.dark})` }}
-                    />
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
-          ))}
+                      key={skill.name}
+                      className="card group relative overflow-hidden"
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
+                      transition={{ delay: categoryIndex * 0.2 + skillIndex * 0.05 }}
+                      whileHover={{ y: -5 }}
+                    >
+                      {/* Skill Icon & Name */}
+                      <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-4">
+                        <div className="text-2xl sm:text-4xl" style={{ color: theme.primary.main }}>
+                          {getIcon(skill.icon)}
+                        </div>
+                        <div>
+                          <h4 className={`text-xs sm:text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+                            {skill.name}
+                          </h4>
+                        </div>
+                      </div>
+
+                      {/* Progress Bar */}
+                      <div className="space-y-1 sm:space-y-2">
+                        <div className="flex justify-between text-[10px] sm:text-sm">
+                          <span className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>Niveau</span>
+                          <span className="font-semibold" style={{ color: theme.primary.main }}>{skill.level}%</span>
+                        </div>
+                        <div className={`h-1.5 sm:h-2 rounded-full overflow-hidden ${isDarkMode ? 'bg-dark-700' : 'bg-gray-200'}`}>
+                          <motion.div
+                            className={`h-full bg-gradient-to-r ${theme.gradient} rounded-full`}
+                            initial={{ width: 0 }}
+                            animate={isInView ? { width: `${skill.level}%` } : { width: 0 }}
+                            transition={{
+                              duration: 1,
+                              delay: categoryIndex * 0.2 + skillIndex * 0.05 + 0.3,
+                              ease: "easeOut"
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Hover Effect Overlay */}
+                      <motion.div
+                        className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-300 pointer-events-none rounded-xl"
+                        style={{ background: `linear-gradient(to bottom right, ${theme.primary.main}, ${theme.primary.dark})` }}
+                      />
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
 
         {/* Additional Info */}
