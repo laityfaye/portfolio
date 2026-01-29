@@ -7,6 +7,11 @@ export const portfolioApi = {
     return response.data;
   },
 
+  sendContact: async (slug, data) => {
+    const response = await api.post(`/public/portfolio/${slug}/contact`, data);
+    return response.data;
+  },
+
   // Private
   get: async () => {
     const response = await api.get('/portfolio');

@@ -31,6 +31,7 @@ class PublicPortfolioResource extends JsonResource
             'brand_name' => $this->brand_name,
             'theme_color' => $this->theme_color,
             'theme_mode' => $this->theme_mode,
+            'template' => $this->template ?? 'classic',
             'skills' => SkillResource::collection($this->skills),
             'projects' => ProjectResource::collection($this->projects),
         ];

@@ -1,0 +1,7 @@
+# Utilisé lorsque la racine du sous-domaine pointe sur le projet Laravel
+# et non sur le dossier public/. Redirige toutes les requêtes vers public/
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>

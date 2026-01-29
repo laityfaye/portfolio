@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { useInView } from 'framer-motion';
-import { useRef, useState } from 'react';
+import { useRef, useState, useCallback } from 'react';
 import {
   FaEnvelope,
   FaPhone,
@@ -11,8 +11,9 @@ import {
   FaPaperPlane
 } from 'react-icons/fa';
 import { useTheme } from '../context/ThemeContext';
+import { portfolioApi } from '../api/portfolio';
 
-const Contact = ({ data = {} }) => {
+const Contact = ({ data = {}, slug }) => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
   const { theme, isDarkMode } = useTheme();
@@ -23,6 +24,8 @@ const Contact = ({ data = {} }) => {
     message: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
+  const [submitSuccess, setSubmitSuccess] = useState(null);
 
   // Safe parsing for objects - handle JSON strings or null
   const parseObjectIfNeeded = (value, defaultValue) => {
@@ -84,17 +87,37 @@ const Contact = ({ data = {} }) => {
     });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = useCallback(async (e) => {
     e.preventDefault();
+    setSubmitError(null);
+    setSubmitSuccess(null);
+
+    if (!slug) {
+      setSubmitError('Impossible d\'envoyer le message (slug manquant).');
+      return;
+    }
+
     setIsSubmitting(true);
 
-    // Simuler l'envoi du formulaire
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    try {
+      await portfolioApi.sendContact(slug, {
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        subject: formData.subject.trim() || undefined,
+        message: formData.message.trim(),
+      });
 
-    console.log('Form submitted:', formData);
-    setIsSubmitting(false);
-    setFormData({ name: '', email: '', subject: '', message: '' });
-  };
+      setSubmitSuccess('Votre message a bien été envoyé.');
+      setFormData({ name: '', email: '', subject: '', message: '' });
+    } catch (error) {
+      const msg =
+        error.response?.data?.message ||
+        'Impossible d\'envoyer le message. Veuillez réessayer.';
+      setSubmitError(msg);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [slug, formData]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -244,6 +267,16 @@ const Contact = ({ data = {} }) => {
           {/* Right Side - Contact Form */}
           <motion.div variants={itemVariants}>
             <form onSubmit={handleSubmit} className="space-y-6">
+              {submitError && (
+                <div className="text-sm text-red-500 bg-red-500/10 border border-red-500/30 px-4 py-2 rounded-lg">
+                  {submitError}
+                </div>
+              )}
+              {submitSuccess && (
+                <div className="text-sm text-emerald-500 bg-emerald-500/10 border border-emerald-500/30 px-4 py-2 rounded-lg">
+                  {submitSuccess}
+                </div>
+              )}
               {/* Name */}
               <div>
                 <label htmlFor="name" className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>

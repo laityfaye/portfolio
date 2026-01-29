@@ -12,7 +12,8 @@
       "Bash(composer install:*)",
       "Bash(composer dump-autoload:*)",
       "Bash(npm run build:*)",
-      "Bash(more:*)"
+      "Bash(more:*)",
+      "WebFetch(domain:doc.intech.sn)"
     ]
   }
 }

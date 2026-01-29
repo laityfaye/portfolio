@@ -28,6 +28,7 @@ class PortfolioResource extends JsonResource
             'brand_name' => $this->brand_name,
             'theme_color' => $this->theme_color,
             'theme_mode' => $this->theme_mode,
+            'template' => $this->template ?? 'classic',
             'status' => $this->status,
             'published_at' => $this->published_at,
             'skills' => SkillResource::collection($this->whenLoaded('skills')),

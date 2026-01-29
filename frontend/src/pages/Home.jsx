@@ -599,8 +599,8 @@ const Home = () => {
 
                   {/* Text Section */}
                   <div className="flex-1 text-center sm:text-left">
-                    <div className="mb-3">
-                      <h3 className="text-2xl sm:text-3xl md:text-4xl font-black text-white mb-1 filter drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]">
+                    <div className="mb-3 flex items-center gap-2">
+                      <h3 className="text-2xl sm:text-3xl md:text-4xl font-black text-white filter drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]">
                         INNOSOFT
                       </h3>
                       <h4 className="text-xl sm:text-2xl md:text-3xl font-black text-red-500 filter drop-shadow-[0_0_15px_rgba(239,68,68,0.8)]">

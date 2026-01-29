@@ -20,6 +20,8 @@ import ProjectsEditor from '../components/dashboard/ProjectsEditor';
 import ContactEditor from '../components/dashboard/ContactEditor';
 import ThemeEditor from '../components/dashboard/ThemeEditor';
 import PaymentStatus from '../components/dashboard/PaymentStatus';
+import PaymentSuccess from '../components/dashboard/PaymentSuccess';
+import PaymentCancel from '../components/dashboard/PaymentCancel';
 
 const Dashboard = () => {
   const { isDarkMode, toggleMode } = useTheme();
@@ -397,6 +399,8 @@ const Dashboard = () => {
               <Route path="projects" element={<ProjectsEditor portfolio={portfolio} onUpdate={refreshPortfolio} />} />
               <Route path="contact" element={<ContactEditor portfolio={portfolio} onUpdate={refreshPortfolio} />} />
               <Route path="theme" element={<ThemeEditor portfolio={portfolio} onUpdate={refreshPortfolio} />} />
+              <Route path="payment/success" element={<PaymentSuccess />} />
+              <Route path="payment/cancel" element={<PaymentCancel />} />
               <Route path="payment" element={<PaymentStatus user={user} />} />
             </Routes>
           </div>

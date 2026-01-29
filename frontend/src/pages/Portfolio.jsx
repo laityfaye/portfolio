@@ -5,7 +5,7 @@ import { portfolioApi } from '../api/portfolio';
 import { ThemeProvider, useTheme } from '../context/ThemeContext';
 import ThemeApplier from '../components/ThemeApplier';
 
-// Import portfolio components
+// Template Classic (layout actuel)
 import Navbar from '../components/Navbar';
 import Hero from '../components/Hero';
 import About from '../components/About';
@@ -13,14 +13,14 @@ import Skills from '../components/Skills';
 import Projects from '../components/Projects';
 import Contact from '../components/Contact';
 import Footer from '../components/Footer';
+import PortfolioMinimal from '../templates/PortfolioMinimal';
 
-const PortfolioContent = ({ data }) => {
+const PortfolioContent = ({ data, slug }) => {
   const { isDarkMode } = useTheme();
-
-  // The API returns { data: {...portfolio...} }, so extract from data.data
   const portfolioData = data || {};
   const skills = data?.skills || [];
   const projects = data?.projects || [];
+  const template = data?.template || 'classic';
 
   // Preload critical images
   useEffect(() => {
@@ -41,6 +41,10 @@ const PortfolioContent = ({ data }) => {
     }
   }, [portfolioData?.profile_image]);
 
+  if (template === 'minimal') {
+    return <PortfolioMinimal data={data} slug={slug} />;
+  }
+
   return (
     <div className={`min-h-screen transition-colors duration-500 ${isDarkMode ? 'bg-dark-900' : 'bg-slate-50'}`}>
       <ThemeApplier />
@@ -50,7 +54,7 @@ const PortfolioContent = ({ data }) => {
         <About data={portfolioData} />
         <Skills skills={skills} />
         <Projects projects={projects} socialLinks={portfolioData?.social_links} />
-        <Contact data={portfolioData} />
+        <Contact data={portfolioData} slug={slug} />
       </main>
       <Footer data={portfolioData} />
     </div>
@@ -107,7 +111,7 @@ const Portfolio = () => {
       initialMode={initialMode}
       disableLocalStorage={true}
     >
-      <PortfolioContent data={data} />
+      <PortfolioContent data={data} slug={slug} />
     </ThemeProvider>
   );
 };

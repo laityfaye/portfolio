@@ -1,9 +1,24 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaSave, FaSun, FaMoon, FaPalette, FaCheck, FaEye } from 'react-icons/fa';
+import { FaSave, FaSun, FaMoon, FaPalette, FaCheck, FaEye, FaLayerGroup, FaAlignLeft } from 'react-icons/fa';
 import { useTheme, themes } from '../../context/ThemeContext';
 import { portfolioApi } from '../../api/portfolio';
 import toast from 'react-hot-toast';
+
+const TEMPLATES = [
+  {
+    id: 'classic',
+    name: 'Classic',
+    description: 'Design dynamique avec hero immersif, orbes animés et sections colorées. Idéal pour mettre en valeur votre personnalité.',
+    icon: FaLayerGroup,
+  },
+  {
+    id: 'minimal',
+    name: 'Minimal',
+    description: 'Layout professionnel avec sidebar fixe, typographie épurée et mise en page sobre. Parfait pour un rendu corporate.',
+    icon: FaAlignLeft,
+  },
+];
 
 const ThemeEditor = ({ portfolio, onUpdate }) => {
   const { isDarkMode } = useTheme();
@@ -11,6 +26,7 @@ const ThemeEditor = ({ portfolio, onUpdate }) => {
   const [showPreview, setShowPreview] = useState(false);
   const [selectedColor, setSelectedColor] = useState(portfolio?.theme_color || 'cyan');
   const [selectedMode, setSelectedMode] = useState(portfolio?.theme_mode || 'dark');
+  const [selectedTemplate, setSelectedTemplate] = useState(portfolio?.template || 'classic');
   
   // Thème rouge fixe pour le dashboard
   const dashboardTheme = {
@@ -26,6 +42,7 @@ const ThemeEditor = ({ portfolio, onUpdate }) => {
     if (portfolio) {
       setSelectedColor(portfolio.theme_color || 'cyan');
       setSelectedMode(portfolio.theme_mode || 'dark');
+      setSelectedTemplate(portfolio.template || 'classic');
     }
   }, [portfolio]);
 
@@ -36,6 +53,7 @@ const ThemeEditor = ({ portfolio, onUpdate }) => {
       await portfolioApi.updateTheme({
         theme_color: selectedColor,
         theme_mode: selectedMode,
+        template: selectedTemplate,
       });
       toast.success('Thème mis à jour avec succès!');
       onUpdate();
@@ -93,6 +111,71 @@ const ThemeEditor = ({ portfolio, onUpdate }) => {
         </motion.button>
       </motion.div>
 
+      {/* Template Selection */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className={`glass-effect-strong rounded-xl p-4 sm:p-6 border ${
+          isDarkMode ? 'border-gray-800' : 'border-gray-200'
+        }`}
+      >
+        <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+          <div className={`p-2 sm:p-3 rounded-xl bg-gradient-to-r ${dashboardTheme.gradient} flex-shrink-0`}>
+            <FaLayerGroup className="text-white text-base sm:text-lg md:text-xl" />
+          </div>
+          <h2 className={`text-base sm:text-lg md:text-xl lg:text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+            Modèle de portfolio
+          </h2>
+        </div>
+        <p className={`text-xs sm:text-sm mb-6 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+          Choisissez la mise en page qui correspond le mieux à votre image professionnelle.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {TEMPLATES.map((tpl) => {
+            const Icon = tpl.icon;
+            const isSelected = selectedTemplate === tpl.id;
+            return (
+              <motion.button
+                key={tpl.id}
+                type="button"
+                onClick={() => setSelectedTemplate(tpl.id)}
+                className={`relative text-left p-5 sm:p-6 rounded-xl border-2 transition-all overflow-hidden ${
+                  isSelected
+                    ? isDarkMode
+                      ? 'border-red-500 bg-red-500/10 shadow-lg shadow-red-500/20'
+                      : 'border-red-500 bg-red-50 shadow-lg shadow-red-500/10'
+                    : isDarkMode
+                      ? 'border-gray-700 bg-gray-800/50 hover:border-gray-600'
+                      : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
+                }`}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                {isSelected && (
+                  <div className="absolute top-4 right-4 w-8 h-8 rounded-full bg-red-500 flex items-center justify-center">
+                    <FaCheck className="text-white text-sm" />
+                  </div>
+                )}
+                <div
+                  className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${
+                    isSelected ? 'bg-red-500/20' : isDarkMode ? 'bg-gray-700' : 'bg-gray-100'
+                  }`}
+                  style={isSelected ? { color: dashboardTheme.primary.main } : {}}
+                >
+                  <Icon className="text-xl" />
+                </div>
+                <h3 className={`font-bold text-lg mb-2 ${isSelected ? 'text-red-500' : isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+                  {tpl.name}
+                </h3>
+                <p className={`text-sm leading-relaxed ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                  {tpl.description}
+                </p>
+              </motion.button>
+            );
+          })}
+        </div>
+      </motion.div>
+
       {/* Preview Section */}
       <AnimatePresence>
         {showPreview && (
@@ -142,7 +225,7 @@ const ThemeEditor = ({ portfolio, onUpdate }) => {
                 border: `1px solid ${selectedTheme.primary.main}30`
               }}>
                 <p className={`text-sm ${selectedMode === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
-                  Ceci est un aperçu de votre portfolio avec le thème <span className="font-semibold capitalize" style={{ color: selectedTheme.primary.main }}>{selectedColor}</span> en mode <span className="font-semibold">{selectedMode === 'dark' ? 'sombre' : 'clair'}</span>.
+                  Aperçu avec le thème <span className="font-semibold capitalize" style={{ color: selectedTheme.primary.main }}>{selectedColor}</span>, mode <span className="font-semibold">{selectedMode === 'dark' ? 'sombre' : 'clair'}</span> et modèle <span className="font-semibold">{selectedTemplate === 'minimal' ? 'Minimal' : 'Classic'}</span>.
                 </p>
               </div>
             </div>

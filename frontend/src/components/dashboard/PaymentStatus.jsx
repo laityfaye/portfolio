@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaUpload, FaCheck, FaClock, FaTimes, FaInfoCircle, FaCreditCard, FaImage, FaEye, FaDownload, FaSpinner, FaExclamationTriangle } from 'react-icons/fa';
+import { FaUpload, FaCheck, FaClock, FaTimes, FaInfoCircle, FaCreditCard, FaImage, FaEye, FaSpinner, FaExclamationTriangle, FaMobileAlt } from 'react-icons/fa';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { paymentsApi } from '../../api/payments';
@@ -16,6 +16,7 @@ const PaymentStatus = ({ user }) => {
   const [imagePreview, setImagePreview] = useState(null);
   const [selectedPayment, setSelectedPayment] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [payTechLoading, setPayTechLoading] = useState(false);
   
   // Thème rouge fixe pour le dashboard
   const dashboardTheme = {
@@ -86,6 +87,22 @@ const PaymentStatus = ({ user }) => {
       setImagePreview(reader.result);
     };
     reader.readAsDataURL(file);
+  };
+
+  const handlePayTech = async () => {
+    setPayTechLoading(true);
+    try {
+      const response = await paymentsApi.requestPayTech();
+      if (response.redirect_url) {
+        window.location.href = response.redirect_url;
+      } else {
+        toast.error('Erreur lors de la création du paiement');
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Erreur lors de l\'initialisation du paiement');
+    } finally {
+      setPayTechLoading(false);
+    }
   };
 
   const handleConfirmUpload = async () => {
@@ -247,18 +264,61 @@ const PaymentStatus = ({ user }) => {
             Montant à payer: <span className="text-xl sm:text-2xl">2 500 FCFA</span>
           </p>
           <p className={`text-xs sm:text-sm mb-3 ${isDarkMode ? 'text-blue-300' : 'text-blue-700'}`}>
-            Effectuez le paiement via Orange Money, Wave ou Mobile Money, puis envoyez une capture d'écran comme preuve de paiement.
+            Payez en ligne via Orange Money, Wave ou Free Money (PayTech) - recommandé. Ou envoyez une capture d'écran comme preuve de paiement manuel.
           </p>
           <div className={`p-2 sm:p-3 rounded-lg mt-3 ${
             isDarkMode ? 'bg-blue-500/10 border border-blue-500/20' : 'bg-blue-100 border border-blue-200'
           }`}>
             <p className={`text-[10px] sm:text-xs ${isDarkMode ? 'text-blue-300' : 'text-blue-700'}`}>
               <FaExclamationTriangle className="inline mr-1" />
-              Assurez-vous que la capture d'écran montre clairement le montant, la date et le numéro de transaction.
+              Pour le paiement manuel: assurez-vous que la capture d'écran montre clairement le montant, la date et le numéro de transaction.
             </p>
           </div>
         </div>
       </motion.div>
+
+      {/* PayTech Button - Primary payment method */}
+      {!hasPendingOrApproved && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className={`glass-effect-strong rounded-xl p-4 sm:p-5 md:p-6 border ${
+            isDarkMode ? 'border-gray-800' : 'border-gray-200'
+          }`}
+        >
+          <div className="flex items-center gap-2 sm:gap-3 mb-4">
+            <div className={`p-2 sm:p-3 rounded-xl bg-gradient-to-r ${dashboardTheme.gradient} flex-shrink-0`}>
+              <FaMobileAlt className="text-white text-lg sm:text-xl" />
+            </div>
+            <h2 className={`text-lg sm:text-xl md:text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+              Paiement en ligne (PayTech)
+            </h2>
+          </div>
+          <p className={`text-sm mb-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+            Paiement sécurisé via Orange Money, Wave ou Free Money. Vous serez redirigé vers la plateforme PayTech.
+          </p>
+          <motion.button
+            onClick={handlePayTech}
+            disabled={payTechLoading}
+            className={`w-full px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r ${dashboardTheme.gradient} text-white font-semibold rounded-xl shadow-lg shadow-red-500/30 hover:shadow-xl hover:shadow-red-500/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 sm:gap-3 text-sm sm:text-base`}
+            whileHover={{ scale: payTechLoading ? 1 : 1.02 }}
+            whileTap={{ scale: payTechLoading ? 1 : 0.98 }}
+          >
+            {payTechLoading ? (
+              <>
+                <FaSpinner className="animate-spin" />
+                <span>Redirection vers PayTech...</span>
+              </>
+            ) : (
+              <>
+                <FaMobileAlt />
+                <span>Payer avec Orange Money / Wave / Free Money</span>
+              </>
+            )}
+          </motion.button>
+        </motion.div>
+      )}
 
       {/* Upload Section */}
       {!hasPendingOrApproved && (

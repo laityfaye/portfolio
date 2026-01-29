@@ -51,6 +51,7 @@ class PaymentController extends Controller
             'amount' => 2500,
             'currency' => 'FCFA',
             'status' => 'pending',
+            'type' => 'manual',
         ]);
 
         return response()->json([

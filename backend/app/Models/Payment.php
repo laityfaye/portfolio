@@ -19,6 +19,10 @@ class Payment extends Model
         'admin_notes',
         'verified_by',
         'verified_at',
+        'ref_command',
+        'token',
+        'payment_method',
+        'type',
     ];
 
     protected function casts(): array
@@ -70,5 +74,10 @@ class Payment extends Model
             'verified_at' => now(),
             'admin_notes' => $notes,
         ]);
+    }
+
+    public function isPayTech(): bool
+    {
+        return $this->type === 'paytech';
     }
 }

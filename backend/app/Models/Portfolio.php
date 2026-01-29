@@ -28,6 +28,7 @@ class Portfolio extends Model
         'brand_name',
         'theme_color',
         'theme_mode',
+        'template',
         'status',
         'published_at',
     ];

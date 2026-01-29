@@ -11,11 +11,13 @@ use App\Http\Controllers\Api\Admin\AdminDashboardController;
 use App\Http\Controllers\Api\Admin\AdminUserController;
 use App\Http\Controllers\Api\Admin\AdminPaymentController;
 use App\Http\Controllers\Api\Admin\AdminPortfolioController;
+use App\Http\Controllers\Api\PayTechController;
 use Illuminate\Support\Facades\Route;
 
 // Public routes
 Route::prefix('public')->group(function () {
     Route::get('/portfolio/{slug}', [PublicPortfolioController::class, 'show']);
+    Route::post('/portfolio/{slug}/contact', [PublicPortfolioController::class, 'contact']);
 });
 
 // Authentication routes
@@ -50,6 +52,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Payments
     Route::get('/payments', [PaymentController::class, 'index']);
     Route::post('/payments/proof', [PaymentController::class, 'uploadProof']);
+    Route::post('/payments/paytech/request', [PayTechController::class, 'requestPayment']);
+});
+
+// PayTech IPN Webhooks (sans auth - PayTech appelle ces URLs)
+Route::prefix('payments/paytech')->group(function () {
+    Route::post('/ipn', [PayTechController::class, 'handleIpn']);
+    Route::post('/refund-ipn', [PayTechController::class, 'handleRefundIpn']);
 });
 
 // Admin authentication

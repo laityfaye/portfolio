@@ -69,6 +69,17 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('user', JSON.stringify(userData));
   };
 
+  const refreshUser = async () => {
+    try {
+      const response = await authApi.me();
+      setUser(response.user);
+      localStorage.setItem('user', JSON.stringify(response.user));
+      return response.user;
+    } catch {
+      return null;
+    }
+  };
+
   const value = {
     user,
     loading,
@@ -79,6 +90,7 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     updateUser,
+    refreshUser,
   };
 
   return (

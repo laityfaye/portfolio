@@ -85,14 +85,19 @@ class PortfolioController extends Controller
         $request->validate([
             'theme_color' => 'required|in:cyan,purple,green,orange,pink,blue,red,yellow,indigo,teal,amber,rose,emerald',
             'theme_mode' => 'required|in:light,dark',
+            'template' => 'sometimes|in:classic,minimal',
         ]);
 
         $portfolio = $request->user()->portfolio;
 
-        $portfolio->update([
+        $data = [
             'theme_color' => $request->theme_color,
             'theme_mode' => $request->theme_mode,
-        ]);
+        ];
+        if ($request->has('template')) {
+            $data['template'] = $request->template;
+        }
+        $portfolio->update($data);
 
         return response()->json([
             'data' => new PortfolioResource($portfolio->fresh()),
