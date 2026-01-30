@@ -3,12 +3,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FaSave, FaUpload, FaEye, FaPlus, FaTrash, FaFilePdf, FaUser, FaBriefcase, FaGraduationCap, FaCode, FaRocket, FaHeart, FaAward, FaArrowUp, FaArrowDown, FaGripVertical, FaCheck, FaEdit, FaDownload } from 'react-icons/fa';
 import { useTheme } from '../../context/ThemeContext';
 import { portfolioApi } from '../../api/portfolio';
+import { getImageUrl } from '../../utils/imageUtils';
 import toast from 'react-hot-toast';
 
 const AboutEditor = ({ portfolio, onUpdate }) => {
   const { isDarkMode } = useTheme();
   const [loading, setLoading] = useState(false);
-  const [cvLoading, setCvLoading] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [draggedIndex, setDraggedIndex] = useState(null);
   
@@ -152,18 +152,13 @@ const AboutEditor = ({ portfolio, onUpdate }) => {
     }
   };
 
-  const handleViewCv = async () => {
+  const handleViewCv = () => {
     if (!portfolio?.cv_file) return;
-    setCvLoading(true);
-    try {
-      const blob = await portfolioApi.getCvBlob();
-      const url = URL.createObjectURL(blob);
-      window.open(url, '_blank', 'noopener,noreferrer');
-      setTimeout(() => URL.revokeObjectURL(url), 60000);
-    } catch (error) {
-      toast.error(error.response?.status === 404 ? 'CV non trouvé' : 'Erreur lors du chargement du CV');
-    } finally {
-      setCvLoading(false);
+    const cvUrl = getImageUrl(portfolio.cv_file);
+    if (cvUrl) {
+      window.open(cvUrl, '_blank', 'noopener,noreferrer');
+    } else {
+      toast.error('URL du CV non disponible');
     }
   };
 
@@ -310,24 +305,14 @@ const AboutEditor = ({ portfolio, onUpdate }) => {
               <button
                 type="button"
                 onClick={handleViewCv}
-                disabled={cvLoading}
-                className={`px-6 py-3 border-2 rounded-xl font-semibold transition-all flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed ${
+                className={`px-6 py-3 border-2 rounded-xl font-semibold transition-all flex items-center gap-2 ${
                   isDarkMode
                     ? 'border-green-500 text-green-400 hover:bg-green-500/10'
                     : 'border-green-500 text-green-600 hover:bg-green-50'
                 }`}
               >
-                {cvLoading ? (
-                  <>
-                    <span className="w-4 h-4 border-2 border-green-500 border-t-transparent rounded-full animate-spin" />
-                    Chargement...
-                  </>
-                ) : (
-                  <>
-                    <FaDownload />
-                    Voir le CV actuel
-                  </>
-                )}
+                <FaDownload />
+                Voir le CV actuel
               </button>
             )}
             <label className={`w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 border-2 border-red-500 text-red-500 font-semibold rounded-xl hover:bg-red-500/10 transition-all cursor-pointer flex items-center justify-center gap-2 text-sm sm:text-base ${
