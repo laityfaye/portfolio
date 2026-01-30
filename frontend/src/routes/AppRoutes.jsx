@@ -28,7 +28,7 @@ function ScrollToTop() {
 
 const AppRoutes = () => {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/p">
       <ScrollToTop />
       <ThemeProvider>
         <AuthProvider>
@@ -38,7 +38,7 @@ const AppRoutes = () => {
               <Route path="/" element={<Home />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
-              <Route path="/p/:slug" element={<Portfolio />} />
+              <Route path="/:slug" element={<Portfolio />} />
 
               {/* Protected Routes (User) */}
               <Route element={<ProtectedRoute />}>

@@ -38,11 +38,11 @@ api.interceptors.response.use(
 
       if (isAdminRoute) {
         localStorage.removeItem('admin_token');
-        window.location.href = '/admin/login';
+        window.location.href = '/p/admin/login';
       } else {
         localStorage.removeItem('auth_token');
         localStorage.removeItem('user');
-        window.location.href = '/login';
+        window.location.href = '/p/login';
       }
     }
     return Promise.reject(error);
