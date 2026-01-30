@@ -158,7 +158,7 @@ const HeroEditor = ({ portfolio, onUpdate }) => {
       return;
     }
 
-    // Aperçu de l'image
+    // Aperçu immédiat pendant l'upload
     const reader = new FileReader();
     reader.onloadend = () => {
       setImagePreview(reader.result);
@@ -167,8 +167,10 @@ const HeroEditor = ({ portfolio, onUpdate }) => {
 
     try {
       await portfolioApi.uploadProfileImage(file);
-      toast.success('Photo de profil mise à jour!');
-      onUpdate();
+      toast.success('Photo de profil mise à jour !');
+      await onUpdate();
+      // Utiliser l'URL serveur après rafraîchissement pour que l'image s'affiche correctement
+      setImagePreview(null);
     } catch (error) {
       toast.error('Erreur lors de l\'upload');
     }
@@ -226,6 +228,7 @@ const HeroEditor = ({ portfolio, onUpdate }) => {
                   <div className="relative w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-red-500/30 shadow-lg shadow-red-500/20">
                     {(imagePreview || portfolio?.profile_image) ? (
                       <img
+                        key={imagePreview || getImageUrl(portfolio?.profile_image) || 'profile'}
                         src={imagePreview || getImageUrl(portfolio?.profile_image)}
                         alt="Profile"
                         className="w-full h-full object-cover"
@@ -321,9 +324,10 @@ const HeroEditor = ({ portfolio, onUpdate }) => {
             <div className="flex flex-col sm:flex-row items-center sm:items-center gap-4 sm:gap-6">
             <div className="relative group flex-shrink-0">
               <div className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-full overflow-hidden border-4 border-red-500/30 shadow-lg shadow-red-500/20 ring-4 ring-red-500/10">
-                {(imagePreview || portfolio?.profile_image) ? (
-                  <>
+{(imagePreview || portfolio?.profile_image) ? (
+                    <>
                     <img
+                      key={imagePreview || getImageUrl(portfolio?.profile_image) || 'profile'}
                       src={imagePreview || getImageUrl(portfolio?.profile_image)}
                       alt="Profile"
                       className="w-full h-full object-cover transition-transform group-hover:scale-110"

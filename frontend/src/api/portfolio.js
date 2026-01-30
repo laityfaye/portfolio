@@ -18,6 +18,12 @@ export const portfolioApi = {
     return response.data;
   },
 
+  /** Télécharge le CV (blob) pour l'ouvrir avec le token d'auth */
+  getCvBlob: async () => {
+    const response = await api.get('/portfolio/cv', { responseType: 'blob' });
+    return response.data;
+  },
+
   update: async (data) => {
     const response = await api.put('/portfolio', data);
     return response.data;

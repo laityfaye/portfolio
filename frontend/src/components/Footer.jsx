@@ -102,6 +102,8 @@ const Footer = ({ data = {} }) => {
                   <img
                     src={getPublicImageUrl('images/INNOSOFT CREATION.png')}
                     alt="Innosoft Portfolio"
+                    decoding="async"
+                    loading="lazy"
                     className="h-14 sm:h-16 w-auto object-contain opacity-95 group-hover:opacity-100 transition-opacity"
                   />
                 </div>

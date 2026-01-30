@@ -32,7 +32,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::get('/auth/me', [AuthController::class, 'me']);
 
-    // Portfolio (user's own)
+    // Portfolio (user's own) — /portfolio/cv avant /portfolio pour le matching
+    Route::get('/portfolio/cv', [PortfolioController::class, 'downloadCv']);
     Route::get('/portfolio', [PortfolioController::class, 'show']);
     Route::put('/portfolio', [PortfolioController::class, 'update']);
     Route::post('/portfolio/profile-image', [PortfolioController::class, 'uploadProfileImage']);

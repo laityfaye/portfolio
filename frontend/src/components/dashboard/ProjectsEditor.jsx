@@ -43,7 +43,8 @@ const ProjectsEditor = ({ portfolio, onUpdate }) => {
   const fetchProjects = async () => {
     try {
       const response = await projectsApi.getAll();
-      setProjects(response.data);
+      // L'API renvoie { data: [...] }
+      setProjects(response?.data?.data ?? response?.data ?? []);
     } catch (error) {
       toast.error('Erreur lors du chargement');
     }
@@ -272,7 +273,24 @@ const ProjectsEditor = ({ portfolio, onUpdate }) => {
                     >
                       <div className="aspect-video relative overflow-hidden bg-gray-800">
                         {project.image ? (
-                          <img src={getImageUrl(project.image)} alt={project.title} className="w-full h-full object-cover" />
+                          <>
+                            <img
+                              key={getImageUrl(project.image)}
+                              src={getImageUrl(project.image)}
+                              alt={project.title}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.target.style.display = 'none';
+                                const fallback = e.target.nextElementSibling;
+                                if (fallback) fallback.style.display = 'flex';
+                              }}
+                            />
+                            <div className={`w-full h-full hidden items-center justify-center absolute inset-0 ${
+                              isDarkMode ? 'bg-gray-800' : 'bg-gray-200'
+                            }`}>
+                              <FaImage className={`text-4xl ${isDarkMode ? 'text-gray-600' : 'text-gray-400'}`} />
+                            </div>
+                          </>
                         ) : (
                           <div className={`w-full h-full flex items-center justify-center ${
                             isDarkMode ? 'bg-gray-800' : 'bg-gray-200'
@@ -689,9 +707,26 @@ const ProjectsEditor = ({ portfolio, onUpdate }) => {
             >
               <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
                 {/* Image */}
-                <div className="flex-shrink-0 w-full sm:w-48 aspect-video rounded-xl overflow-hidden border-2 border-red-500/20">
+                <div className="flex-shrink-0 w-full sm:w-48 aspect-video rounded-xl overflow-hidden border-2 border-red-500/20 relative">
                   {project.image ? (
-                    <img src={getImageUrl(project.image)} alt={project.title} className="w-full h-full object-cover" />
+                    <>
+                      <img
+                        key={getImageUrl(project.image)}
+                        src={getImageUrl(project.image)}
+                        alt={project.title}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          const fallback = e.target.nextElementSibling;
+                          if (fallback) fallback.style.display = 'flex';
+                        }}
+                      />
+                      <div className={`w-full h-full hidden items-center justify-center absolute inset-0 ${
+                        isDarkMode ? 'bg-gray-800' : 'bg-gray-100'
+                      }`}>
+                        <FaImage className={`text-3xl ${isDarkMode ? 'text-gray-600' : 'text-gray-400'}`} />
+                      </div>
+                    </>
                   ) : (
                     <div className={`w-full h-full flex items-center justify-center ${
                       isDarkMode ? 'bg-gray-800' : 'bg-gray-100'

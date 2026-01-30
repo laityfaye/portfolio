@@ -8,6 +8,7 @@ use App\Http\Resources\PortfolioResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PortfolioController extends Controller
 {
@@ -54,6 +55,21 @@ class PortfolioController extends Controller
             'message' => 'Photo de profil mise a jour',
             'image_url' => Storage::disk('public')->url($path),
         ]);
+    }
+
+    public function downloadCv(Request $request): StreamedResponse|JsonResponse
+    {
+        $portfolio = $request->user()->portfolio;
+
+        if (!$portfolio->cv_file || !Storage::disk('public')->exists($portfolio->cv_file)) {
+            return response()->json(['message' => 'CV non trouvé'], 404);
+        }
+
+        return Storage::disk('public')->response(
+            $portfolio->cv_file,
+            'cv.pdf',
+            ['Content-Type' => 'application/pdf']
+        );
     }
 
     public function uploadCv(Request $request): JsonResponse

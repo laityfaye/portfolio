@@ -1516,6 +1516,8 @@ const PortfolioPremium = ({ data, slug }) => {
                     <img
                       src={getPublicImageUrl('images/INNOSOFT CREATION.png')}
                       alt="Innosoft Portfolio"
+                      decoding="async"
+                      loading="lazy"
                       className="h-12 sm:h-14 md:h-16 w-auto object-contain opacity-95 group-hover:opacity-100 transition-opacity"
                     />
                   </div>

@@ -593,6 +593,8 @@ const Home = () => {
                       <img
                         src={getPublicImageUrl('images/INNOSOFT CREATION.png')}
                         alt="InnoSoft Creation Logo"
+                        decoding="async"
+                        fetchPriority="high"
                         className="w-32 h-32 sm:w-40 sm:h-40 object-contain filter drop-shadow-[0_0_20px_rgba(239,68,68,0.6)] group-hover:drop-shadow-[0_0_30px_rgba(239,68,68,0.9)] transition-all duration-300 group-hover:scale-105"
                       />
                     </div>

@@ -8,6 +8,7 @@ import toast from 'react-hot-toast';
 const AboutEditor = ({ portfolio, onUpdate }) => {
   const { isDarkMode } = useTheme();
   const [loading, setLoading] = useState(false);
+  const [cvLoading, setCvLoading] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [draggedIndex, setDraggedIndex] = useState(null);
   
@@ -144,10 +145,25 @@ const AboutEditor = ({ portfolio, onUpdate }) => {
 
     try {
       await portfolioApi.uploadCv(file);
-      toast.success('CV mis à jour!');
+      toast.success('CV mis à jour !');
       onUpdate();
     } catch (error) {
       toast.error('Erreur lors de l\'upload');
+    }
+  };
+
+  const handleViewCv = async () => {
+    if (!portfolio?.cv_file) return;
+    setCvLoading(true);
+    try {
+      const blob = await portfolioApi.getCvBlob();
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank', 'noopener,noreferrer');
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    } catch (error) {
+      toast.error(error.response?.status === 404 ? 'CV non trouvé' : 'Erreur lors du chargement du CV');
+    } finally {
+      setCvLoading(false);
     }
   };
 
@@ -291,19 +307,28 @@ const AboutEditor = ({ portfolio, onUpdate }) => {
           </div>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
             {portfolio?.cv_file && (
-              <a
-                href={portfolio.cv_file}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`px-6 py-3 border-2 rounded-xl font-semibold transition-all flex items-center gap-2 ${
+              <button
+                type="button"
+                onClick={handleViewCv}
+                disabled={cvLoading}
+                className={`px-6 py-3 border-2 rounded-xl font-semibold transition-all flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed ${
                   isDarkMode
                     ? 'border-green-500 text-green-400 hover:bg-green-500/10'
                     : 'border-green-500 text-green-600 hover:bg-green-50'
                 }`}
               >
-                <FaDownload />
-                Voir le CV actuel
-              </a>
+                {cvLoading ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-green-500 border-t-transparent rounded-full animate-spin" />
+                    Chargement...
+                  </>
+                ) : (
+                  <>
+                    <FaDownload />
+                    Voir le CV actuel
+                  </>
+                )}
+              </button>
             )}
             <label className={`w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 border-2 border-red-500 text-red-500 font-semibold rounded-xl hover:bg-red-500/10 transition-all cursor-pointer flex items-center justify-center gap-2 text-sm sm:text-base ${
               isDarkMode ? 'border-red-500 text-red-400 hover:bg-red-500/20' : 'border-red-500 text-red-500 hover:bg-red-50'
