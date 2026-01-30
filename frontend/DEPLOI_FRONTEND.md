@@ -72,11 +72,17 @@ cp -r dist/* /chemin/vers/public_html/p/
 
 **Structure plateforme mère** : `root /home/tfksservice/innosoft/frontend/dist`
 
-1. Copiez le contenu de `dist/` dans le sous-dossier `p/` du site :
+1. Copiez le contenu de `dist/` dans le sous-dossier `p/` du site. **Utilisez toujours le chemin complet** vers le dossier de build (où vous avez lancé `npm run build`) :
 
 ```bash
+# Le build crée dist/ dans ~/portfolio/frontend/ — pas dans ~/innosoft
 mkdir -p /home/tfksservice/innosoft/frontend/dist/p
 cp -r ~/portfolio/frontend/dist/* /home/tfksservice/innosoft/frontend/dist/p/
+```
+
+Si vous êtes déjà dans `~/portfolio/frontend`, vous pouvez écrire :
+```bash
+cp -r dist/* /home/tfksservice/innosoft/frontend/dist/p/
 ```
 
 2. Ajoutez un bloc `location /p/` dans `/etc/nginx/sites-available/innosft.com` (dans le server block HTTPS, avant `location /`) :
@@ -119,7 +125,7 @@ Sur Hostinger mutualisé : activer SSL depuis le hPanel pour innosft.com.
 
 ## Script de déploiement rapide
 
-À exécuter sur le serveur après chaque mise à jour :
+À exécuter sur le serveur après chaque mise à jour. **Important** : le `cp` utilise `dist/*` car le script fait d’abord `cd ~/portfolio/frontend` (c’est là que se trouve `dist/` après le build). Si vous exécutez les commandes une par une depuis un autre répertoire, utilisez `~/portfolio/frontend/dist/*` comme source.
 
 ```bash
 #!/bin/bash
@@ -136,7 +142,9 @@ echo "Déploiement terminé ! Plateforme disponible sur https://innosft.com/p/"
 
 | Problème | Solution |
 |----------|----------|
+| `cp: cannot stat 'dist/*': No such file or directory` | Le dossier `dist/` est créé dans le répertoire où vous lancez `npm run build` (ex. `~/portfolio/frontend`). Utilisez le chemin complet : `cp -r ~/portfolio/frontend/dist/* /home/tfksservice/innosoft/frontend/dist/p/` |
 | Erreur 404 sur /p/login, /p/dashboard, etc. | Vérifier `try_files` dans le bloc `location /p/` (fallback vers `/p/index.html`) |
 | L’API ne répond pas (CORS) | Vérifier la config CORS dans Laravel (`config/cors.php`) et que `apiportfolio.innosft.com` est autorisé |
 | Mauvaise URL d’API | Vérifier `.env.production` et que `VITE_API_URL` est bien `https://apiportfolio.innosft.com/api` |
-| Assets (JS/CSS) non chargés | Vérifier que les fichiers sont bien dans `public/p/` et que le chemin est correct |
+| Assets (JS/CSS) non chargés | Vérifier que les fichiers sont bien dans `frontend/dist/p/` (ou `public/p/` selon votre config) et que le chemin est correct |
+| **Images du dashboard ne s’affichent pas** | 1) Rebuild avec `VITE_API_URL` défini dans `.env.production` (ex. `https://apiportfolio.innosft.com/api`). 2) Sur le backend Laravel, définir `APP_URL=https://apiportfolio.innosft.com` et exécuter `php artisan storage:link` pour que `/storage/` serve les fichiers uploadés. |

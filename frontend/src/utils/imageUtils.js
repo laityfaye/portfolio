@@ -39,18 +39,17 @@ export const getImageUrl = (imagePath) => {
   
   const baseUrl = `${protocol}//${hostname}${port && port !== '443' && port !== '80' ? `:${port}` : ''}`;
   
-  // If it's already a full URL, fix the port if needed
+  // If it's already a full URL: use as is or rewrite origin if backend returned localhost (production)
   if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
     try {
       const imageUrlObj = new URL(imagePath);
-      // If the URL is localhost without port or with wrong port, fix it
-      if (imageUrlObj.hostname === 'localhost' && (!imageUrlObj.port || imageUrlObj.port !== port)) {
-        imageUrlObj.port = port;
-        return imageUrlObj.toString();
+      // Si l'API a renvoyé une URL localhost (APP_URL incorrect en prod ou port manquant en dev), réécrire avec baseUrl
+      if (imageUrlObj.hostname === 'localhost' || imageUrlObj.hostname === '127.0.0.1') {
+        const pathOnly = imageUrlObj.pathname + imageUrlObj.search;
+        return `${baseUrl}${pathOnly}`;
       }
-      return imagePath; // Return as is if port is correct or not localhost
+      return imagePath;
     } catch (e) {
-      // If URL parsing fails, return as is
       return imagePath;
     }
   }
@@ -65,8 +64,9 @@ export const getImageUrl = (imagePath) => {
     return getPublicImageUrl(imagePath);
   }
   
-  // Otherwise, it's a storage path - prepend the storage URL
-  const imageUrl = `${baseUrl}/storage/${imagePath}`;
+  // Otherwise, it's a storage path (e.g. "profiles/1/xxx.jpg" or "storage/profiles/1/xxx.jpg")
+  const pathWithoutStorage = imagePath.startsWith('storage/') ? imagePath.slice(8) : imagePath;
+  const imageUrl = `${baseUrl}/storage/${pathWithoutStorage}`;
   
   // Debug: log the constructed URL in development
   if (import.meta.env.DEV) {
