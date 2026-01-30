@@ -65,11 +65,18 @@ class PortfolioController extends Controller
             return response()->json(['message' => 'CV non trouvé'], 404);
         }
 
-        return Storage::disk('public')->response(
+        $response = Storage::disk('public')->response(
             $portfolio->cv_file,
             'cv.pdf',
-            ['Content-Type' => 'application/pdf']
+            [
+                'Content-Type' => 'application/pdf',
+                'Access-Control-Allow-Origin' => '*',
+                'Access-Control-Allow-Methods' => 'GET, OPTIONS',
+                'Access-Control-Allow-Headers' => 'Content-Type, Authorization',
+            ]
         );
+
+        return $response;
     }
 
     public function uploadCv(Request $request): JsonResponse
