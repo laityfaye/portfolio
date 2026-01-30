@@ -4,7 +4,7 @@ import { FaUpload, FaCheck, FaClock, FaTimes, FaInfoCircle, FaCreditCard, FaImag
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { paymentsApi } from '../../api/payments';
-import { getImageUrl } from '../../utils/imageUtils';
+import { getImageUrl, getPublicImageUrl } from '../../utils/imageUtils';
 import toast from 'react-hot-toast';
 
 const PaymentStatus = ({ user }) => {
@@ -454,11 +454,15 @@ const PaymentStatus = ({ user }) => {
                       className="relative w-full sm:w-20 md:w-24 h-40 sm:h-20 md:h-24 rounded-xl overflow-hidden border-2 border-red-500/20 cursor-pointer flex-shrink-0 self-center sm:self-start"
                       onClick={() => setSelectedPayment(payment)}
                     >
-                      {payment.proof_image ? (
+                      {proofImageUrl ? (
                         <img
                           src={proofImageUrl}
                           alt="Preuve de paiement"
                           className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = getPublicImageUrl('images/profile.jpeg');
+                          }}
                         />
                       ) : (
                         <div className={`w-full h-full flex items-center justify-center ${
@@ -571,18 +575,22 @@ const PaymentStatus = ({ user }) => {
                   <FaTimes className="text-base sm:text-lg" />
                 </button>
               </div>
-              {selectedPayment.proof_image && (
-                <div className="rounded-xl overflow-hidden border-2 border-red-500/30">
-                  <img
-                    src={getImageUrl(selectedPayment.proof_image)}
-                    alt="Preuve de paiement"
-                    className="w-full h-full object-contain"
-                    onError={(e) => {
-                      console.error('Erreur de chargement de l\'image:', e.target.src);
-                    }}
-                  />
-                </div>
-              )}
+              {selectedPayment.proof_image && (() => {
+                const modalImageUrl = getImageUrl(selectedPayment.proof_image);
+                return modalImageUrl ? (
+                  <div className="rounded-xl overflow-hidden border-2 border-red-500/30">
+                    <img
+                      src={modalImageUrl}
+                      alt="Preuve de paiement"
+                      className="w-full h-full object-contain"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = getPublicImageUrl('images/profile.jpeg');
+                      }}
+                    />
+                  </div>
+                ) : null;
+              })()}
             </motion.div>
           </motion.div>
         )}

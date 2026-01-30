@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FaPlus, FaTrash, FaEdit, FaUpload, FaEye, FaCheck, FaTimes, FaGithub, FaExternalLinkAlt, FaImage, FaTag, FaCode, FaStar, FaArrowUp, FaArrowDown } from 'react-icons/fa';
 import { useTheme } from '../../context/ThemeContext';
 import { projectsApi } from '../../api/projects';
-import { getImageUrl } from '../../utils/imageUtils';
+import { getImageUrl, getPublicImageUrl } from '../../utils/imageUtils';
 import toast from 'react-hot-toast';
 
 const ProjectsEditor = ({ portfolio, onUpdate }) => {
@@ -275,14 +275,13 @@ const ProjectsEditor = ({ portfolio, onUpdate }) => {
                         {project.image ? (
                           <>
                             <img
-                              key={getImageUrl(project.image)}
-                              src={getImageUrl(project.image)}
+                              key={getImageUrl(project.image) || project.id}
+                              src={getImageUrl(project.image) || getPublicImageUrl('images/profile.jpeg')}
                               alt={project.title}
                               className="w-full h-full object-cover"
                               onError={(e) => {
-                                e.target.style.display = 'none';
-                                const fallback = e.target.nextElementSibling;
-                                if (fallback) fallback.style.display = 'flex';
+                                e.target.onerror = null;
+                                e.target.src = getPublicImageUrl('images/profile.jpeg');
                               }}
                             />
                             <div className={`w-full h-full hidden items-center justify-center absolute inset-0 ${
@@ -425,9 +424,13 @@ const ProjectsEditor = ({ portfolio, onUpdate }) => {
                       <div className="relative group">
                         <div className="aspect-video rounded-xl overflow-hidden border-2 border-red-500/30">
                           <img
-                            src={imagePreview || getImageUrl(editingProject?.image)}
+                            src={imagePreview || getImageUrl(editingProject?.image) || getPublicImageUrl('images/profile.jpeg')}
                             alt="Preview"
                             className="w-full h-full object-cover"
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.src = getPublicImageUrl('images/profile.jpeg');
+                            }}
                           />
                         </div>
                         <button
@@ -711,14 +714,13 @@ const ProjectsEditor = ({ portfolio, onUpdate }) => {
                   {project.image ? (
                     <>
                       <img
-                        key={getImageUrl(project.image)}
-                        src={getImageUrl(project.image)}
+                        key={getImageUrl(project.image) || project.id}
+                        src={getImageUrl(project.image) || getPublicImageUrl('images/profile.jpeg')}
                         alt={project.title}
                         className="w-full h-full object-cover"
                         onError={(e) => {
-                          e.target.style.display = 'none';
-                          const fallback = e.target.nextElementSibling;
-                          if (fallback) fallback.style.display = 'flex';
+                          e.target.onerror = null;
+                          e.target.src = getPublicImageUrl('images/profile.jpeg');
                         }}
                       />
                       <div className={`w-full h-full hidden items-center justify-center absolute inset-0 ${

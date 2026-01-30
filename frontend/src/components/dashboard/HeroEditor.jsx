@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FaSave, FaUpload, FaEye, FaEdit, FaPlus, FaTrash, FaImage, FaUser, FaBriefcase, FaChartLine, FaMagic, FaGripVertical, FaArrowUp, FaArrowDown, FaLightbulb, FaCheck } from 'react-icons/fa';
 import { useTheme } from '../../context/ThemeContext';
 import { portfolioApi } from '../../api/portfolio';
-import { getImageUrl } from '../../utils/imageUtils';
+import { getImageUrl, getPublicImageUrl } from '../../utils/imageUtils';
 import toast from 'react-hot-toast';
 
 const HeroEditor = ({ portfolio, onUpdate }) => {
@@ -229,14 +229,12 @@ const HeroEditor = ({ portfolio, onUpdate }) => {
                     {(imagePreview || portfolio?.profile_image) ? (
                       <img
                         key={imagePreview || getImageUrl(portfolio?.profile_image) || 'profile'}
-                        src={imagePreview || getImageUrl(portfolio?.profile_image)}
+                        src={imagePreview || getImageUrl(portfolio?.profile_image) || getPublicImageUrl('images/profile.jpeg')}
                         alt="Profile"
                         className="w-full h-full object-cover"
                         onError={(e) => {
-                          console.error('Erreur de chargement de l\'image:', e.target.src);
-                          e.target.style.display = 'none';
-                          const fallback = e.target.nextElementSibling;
-                          if (fallback) fallback.style.display = 'flex';
+                          e.target.onerror = null;
+                          e.target.src = getPublicImageUrl('images/profile.jpeg');
                         }}
                       />
                     ) : null}
@@ -328,13 +326,12 @@ const HeroEditor = ({ portfolio, onUpdate }) => {
                     <>
                     <img
                       key={imagePreview || getImageUrl(portfolio?.profile_image) || 'profile'}
-                      src={imagePreview || getImageUrl(portfolio?.profile_image)}
+                      src={imagePreview || getImageUrl(portfolio?.profile_image) || getPublicImageUrl('images/profile.jpeg')}
                       alt="Profile"
                       className="w-full h-full object-cover transition-transform group-hover:scale-110"
                       onError={(e) => {
-                        e.target.style.display = 'none';
-                        const fallback = e.target.nextElementSibling;
-                        if (fallback) fallback.style.display = 'flex';
+                        e.target.onerror = null;
+                        e.target.src = getPublicImageUrl('images/profile.jpeg');
                       }}
                     />
                     <div className={`w-full h-full hidden items-center justify-center ${

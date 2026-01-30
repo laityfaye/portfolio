@@ -1,9 +1,16 @@
 /**
  * URL des assets publics (dossier public/) - respecte base Vite en production (ex: /p/)
+ * En contexte navigateur, retourne une URL absolue pour que les images s'affichent
+ * correctement sur toutes les routes du dashboard (/p/dashboard, /p/dashboard/projects, etc.)
  */
 export const getPublicImageUrl = (path) => {
+  const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
   const p = path.startsWith('/') ? path.slice(1) : path;
-  return `${import.meta.env.BASE_URL}${p}`;
+  const relative = `${base}${p}`;
+  if (typeof window !== 'undefined' && window.location?.origin) {
+    return new URL(relative, window.location.origin).href;
+  }
+  return relative;
 };
 
 /**
@@ -59,13 +66,13 @@ export const getImageUrl = (imagePath) => {
     return `${baseUrl}${imagePath}`;
   }
   
-  // If it's a public asset (starts with / but not /storage), respect base URL en production
+  // If it's a public asset (starts with / but not /storage), use public base
   if (imagePath.startsWith('/')) {
     return getPublicImageUrl(imagePath);
   }
   
   // Otherwise, it's a storage path (e.g. "profiles/1/xxx.jpg" or "storage/profiles/1/xxx.jpg")
-  const pathWithoutStorage = imagePath.startsWith('storage/') ? imagePath.slice(8) : imagePath;
+  const pathWithoutStorage = imagePath.startsWith('storage/') ? imagePath.slice(8) : imagePath.trim();
   const imageUrl = `${baseUrl}/storage/${pathWithoutStorage}`;
   
   // Debug: log the constructed URL in development
