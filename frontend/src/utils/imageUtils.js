@@ -1,4 +1,12 @@
 /**
+ * URL des assets publics (dossier public/) - respecte base Vite en production (ex: /p/)
+ */
+export const getPublicImageUrl = (path) => {
+  const p = path.startsWith('/') ? path.slice(1) : path;
+  return `${import.meta.env.BASE_URL}${p}`;
+};
+
+/**
  * Helper function to construct image URLs
  * Handles different image path formats:
  * - Full URLs (http/https) - fixes port if needed
@@ -52,9 +60,9 @@ export const getImageUrl = (imagePath) => {
     return `${baseUrl}${imagePath}`;
   }
   
-  // If it's a public asset (starts with / but not /storage), return as is
+  // If it's a public asset (starts with / but not /storage), respect base URL en production
   if (imagePath.startsWith('/')) {
-    return imagePath;
+    return getPublicImageUrl(imagePath);
   }
   
   // Otherwise, it's a storage path - prepend the storage URL
@@ -71,7 +79,7 @@ export const getImageUrl = (imagePath) => {
 /**
  * Get profile image URL with fallback
  */
-export const getProfileImageUrl = (imagePath, fallback = '/images/profile.jpeg') => {
+export const getProfileImageUrl = (imagePath, fallback = null) => {
   const url = getImageUrl(imagePath);
-  return url || fallback;
+  return url || fallback || getPublicImageUrl('images/profile.jpeg');
 };

@@ -3,7 +3,7 @@ import { motion, useMotionValue, useTransform, useSpring, useInView } from 'fram
 import { FaArrowDown, FaCode, FaLaptopCode, FaRocket } from 'react-icons/fa';
 import { useEffect, useMemo, useRef } from 'react';
 import { useTheme } from '../context/ThemeContext';
-import { getProfileImageUrl } from '../utils/imageUtils';
+import { getProfileImageUrl, getPublicImageUrl } from '../utils/imageUtils';
 
 // Composant Counter animé
 const AnimatedCounter = ({ value, suffix = '', className }) => {
@@ -54,9 +54,10 @@ const Hero = ({ data = {} }) => {
     display_name = 'Votre Nom',
     job_title = 'Ingenieur Logiciel',
     hero_description = 'Je cree des experiences web exceptionnelles avec des technologies modernes. Passionne par le code propre, l\'innovation et la resolution de problemes complexes.',
-    profile_image = '/images/profile.jpeg',
+    profile_image: rawProfileImage,
     hero_stats: rawHeroStats
   } = data;
+  const profile_image = rawProfileImage || getPublicImageUrl('images/profile.jpeg');
 
   // Safe parsing for hero_stats - handle JSON strings or null
   const parseIfNeeded = (value, defaultValue) => {
@@ -331,7 +332,7 @@ const Hero = ({ data = {} }) => {
                       fetchPriority="high"
                       decoding="async"
                       onError={(e) => {
-                        e.target.src = '/images/profile.jpeg';
+                        e.target.src = getPublicImageUrl('images/profile.jpeg');
                       }}
                     />
                   </div>

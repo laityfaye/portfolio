@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { FaArrowUp, FaArrowRight } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
+import { getPublicImageUrl } from '../utils/imageUtils';
 
 const SECTION_IDS = ['home', 'about', 'skills', 'projects', 'contact'];
 const navItems = SECTION_IDS.map((id) => ({
@@ -99,7 +100,7 @@ const Footer = ({ data = {} }) => {
                   }}
                 >
                   <img
-                    src="/images/INNOSOFT%20CREATION.png"
+                    src={getPublicImageUrl('images/INNOSOFT CREATION.png')}
                     alt="Innosoft Portfolio"
                     className="h-14 sm:h-16 w-auto object-contain opacity-95 group-hover:opacity-100 transition-opacity"
                   />

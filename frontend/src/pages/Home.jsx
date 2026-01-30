@@ -6,6 +6,7 @@ import {
   FaCheck, FaStar, FaUsers, FaCode, FaSun, FaMoon
 } from 'react-icons/fa';
 import { useTheme } from '../context/ThemeContext';
+import { getPublicImageUrl } from '../utils/imageUtils';
 import { useAuth } from '../context/AuthContext';
 import TemplatePreview from '../components/TemplatePreview';
 
@@ -590,7 +591,7 @@ const Home = () => {
                   <div className="flex-shrink-0">
                     <div className="relative">
                       <img
-                        src="/images/INNOSOFT CREATION.png"
+                        src={getPublicImageUrl('images/INNOSOFT CREATION.png')}
                         alt="InnoSoft Creation Logo"
                         className="w-32 h-32 sm:w-40 sm:h-40 object-contain filter drop-shadow-[0_0_20px_rgba(239,68,68,0.6)] group-hover:drop-shadow-[0_0_30px_rgba(239,68,68,0.9)] transition-all duration-300 group-hover:scale-105"
                       />

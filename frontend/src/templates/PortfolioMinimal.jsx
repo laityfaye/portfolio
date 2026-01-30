@@ -7,7 +7,7 @@ import {
 } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
-import { getProfileImageUrl, getImageUrl } from '../utils/imageUtils';
+import { getProfileImageUrl, getImageUrl, getPublicImageUrl } from '../utils/imageUtils';
 import { getIcon } from '../utils/iconMapper';
 import ThemeApplier from '../components/ThemeApplier';
 import { portfolioApi } from '../api/portfolio';
@@ -565,7 +565,7 @@ const PortfolioPremium = ({ data, slug }) => {
                     className="w-full h-auto aspect-square object-cover"
                     loading="eager"
                     fetchPriority="high"
-                    onError={(e) => { e.target.src = '/images/profile.jpeg'; }}
+                    onError={(e) => { e.target.src = getPublicImageUrl('images/profile.jpeg'); }}
                   />
                 </motion.div>
               </div>
@@ -1514,7 +1514,7 @@ const PortfolioPremium = ({ data, slug }) => {
                     }}
                   >
                     <img
-                      src="/images/INNOSOFT%20CREATION.png"
+                      src={getPublicImageUrl('images/INNOSOFT CREATION.png')}
                       alt="Innosoft Portfolio"
                       className="h-12 sm:h-14 md:h-16 w-auto object-contain opacity-95 group-hover:opacity-100 transition-opacity"
                     />

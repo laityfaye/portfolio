@@ -35,17 +35,26 @@ const Register = () => {
     }
 
     setLoading(true);
+    const payload = {
+      first_name: formData.first_name.trim(),
+      last_name: formData.last_name.trim(),
+      email: formData.email.trim(),
+      phone: formData.phone?.trim() || '',
+      password: formData.password,
+      password_confirmation: formData.password_confirmation,
+    };
 
     try {
-      await register(formData);
-      toast.success('Compte créé avec succès!');
+      await register(payload);
+      toast.success('Compte créé avec succès !');
       navigate('/dashboard');
     } catch (error) {
       const errors = error.response?.data?.errors;
-      if (errors) {
-        Object.values(errors).forEach(err => toast.error(err[0]));
+      if (errors && typeof errors === 'object') {
+        const messages = Object.values(errors).flat();
+        messages.slice(0, 3).forEach((msg) => toast.error(msg));
       } else {
-        toast.error(error.response?.data?.message || 'Erreur lors de l\'inscription');
+        toast.error(error.response?.data?.message || "Erreur lors de l'inscription");
       }
     } finally {
       setLoading(false);
@@ -108,11 +117,11 @@ const Register = () => {
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4" autoComplete="on">
             {/* Name fields */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className={`block text-sm font-medium mb-2 ${
+                <label htmlFor="register-first_name" className={`block text-sm font-medium mb-2 ${
                   isDarkMode ? 'text-gray-300' : 'text-gray-700'
                 }`}>
                   Prénom
@@ -122,11 +131,13 @@ const Register = () => {
                     isDarkMode ? 'text-gray-500' : 'text-gray-400'
                   }`} />
                   <input
+                    id="register-first_name"
                     type="text"
                     name="first_name"
                     value={formData.first_name}
                     onChange={handleChange}
                     required
+                    autoComplete="given-name"
                     className={`w-full pl-9 pr-3 py-2.5 rounded-xl text-sm transition-colors ${
                       isDarkMode
                         ? 'bg-gray-800 border border-gray-700 text-white placeholder-gray-500 focus:border-red-500'
@@ -137,30 +148,32 @@ const Register = () => {
                 </div>
               </div>
               <div>
-                <label className={`block text-sm font-medium mb-2 ${
+                <label htmlFor="register-last_name" className={`block text-sm font-medium mb-2 ${
                   isDarkMode ? 'text-gray-300' : 'text-gray-700'
                 }`}>
                   Nom
                 </label>
                 <input
+                  id="register-last_name"
                   type="text"
                   name="last_name"
-                  value={formData.last_name}
-                  onChange={handleChange}
-                  required
-                  className={`w-full px-3 py-2.5 rounded-xl text-sm transition-colors ${
-                    isDarkMode
-                      ? 'bg-gray-800 border border-gray-700 text-white placeholder-gray-500 focus:border-red-500'
-                      : 'bg-gray-50 border border-gray-200 text-gray-900 placeholder-gray-400 focus:border-red-500 focus:bg-white'
-                  } outline-none`}
-                  placeholder="Nom"
-                />
+value={formData.last_name}
+                    onChange={handleChange}
+                    required
+                    autoComplete="family-name"
+                    className={`w-full px-3 py-2.5 rounded-xl text-sm transition-colors ${
+                      isDarkMode
+                        ? 'bg-gray-800 border border-gray-700 text-white placeholder-gray-500 focus:border-red-500'
+                        : 'bg-gray-50 border border-gray-200 text-gray-900 placeholder-gray-400 focus:border-red-500 focus:bg-white'
+                    } outline-none`}
+                    placeholder="Nom"
+                  />
               </div>
             </div>
 
             {/* Email */}
             <div>
-              <label className={`block text-sm font-medium mb-2 ${
+              <label htmlFor="register-email" className={`block text-sm font-medium mb-2 ${
                 isDarkMode ? 'text-gray-300' : 'text-gray-700'
               }`}>
                 Email
@@ -170,11 +183,13 @@ const Register = () => {
                   isDarkMode ? 'text-gray-500' : 'text-gray-400'
                 }`} />
                 <input
+                  id="register-email"
                   type="email"
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
                   required
+                  autoComplete="email"
                   className={`w-full pl-9 pr-3 py-2.5 rounded-xl text-sm transition-colors ${
                     isDarkMode
                       ? 'bg-gray-800 border border-gray-700 text-white placeholder-gray-500 focus:border-red-500'
@@ -187,7 +202,7 @@ const Register = () => {
 
             {/* Phone */}
             <div>
-              <label className={`block text-sm font-medium mb-2 ${
+              <label htmlFor="register-phone" className={`block text-sm font-medium mb-2 ${
                 isDarkMode ? 'text-gray-300' : 'text-gray-700'
               }`}>
                 Téléphone <span className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>(optionnel)</span>
@@ -197,10 +212,12 @@ const Register = () => {
                   isDarkMode ? 'text-gray-500' : 'text-gray-400'
                 }`} />
                 <input
+                  id="register-phone"
                   type="tel"
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
+                  autoComplete="tel"
                   className={`w-full pl-9 pr-3 py-2.5 rounded-xl text-sm transition-colors ${
                     isDarkMode
                       ? 'bg-gray-800 border border-gray-700 text-white placeholder-gray-500 focus:border-red-500'
@@ -230,12 +247,13 @@ const Register = () => {
                     onChange={handleChange}
                     required
                     minLength={8}
+                    autoComplete="new-password"
                     className={`w-full pl-9 pr-9 py-2.5 rounded-xl text-sm transition-colors ${
                       isDarkMode
                         ? 'bg-gray-800 border border-gray-700 text-white placeholder-gray-500 focus:border-red-500'
                         : 'bg-gray-50 border border-gray-200 text-gray-900 placeholder-gray-400 focus:border-red-500 focus:bg-white'
                     } outline-none`}
-                    placeholder="Mot de passe"
+                    placeholder="Mot de passe (min. 8 caractères)"
                   />
                   <button
                     type="button"
@@ -264,6 +282,8 @@ const Register = () => {
                     value={formData.password_confirmation}
                     onChange={handleChange}
                     required
+                    minLength={8}
+                    autoComplete="new-password"
                     className={`w-full pl-9 pr-9 py-2.5 rounded-xl text-sm transition-colors ${
                       isDarkMode
                         ? 'bg-gray-800 border border-gray-700 text-white placeholder-gray-500 focus:border-red-500'

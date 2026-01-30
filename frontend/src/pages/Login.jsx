@@ -28,13 +28,16 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    const email = formData.email.trim();
+    const password = formData.password;
 
     try {
-      await login(formData.email, formData.password);
-      toast.success('Connexion réussie!');
+      await login(email, password);
+      toast.success('Connexion réussie !');
       navigate(from, { replace: true });
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Erreur de connexion');
+      const msg = error.response?.data?.message;
+      toast.error(msg || 'Erreur de connexion');
     } finally {
       setLoading(false);
     }
@@ -81,10 +84,10 @@ const Login = () => {
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-5" autoComplete="on">
             {/* Email */}
             <div>
-              <label className={`block text-sm font-medium mb-2 ${
+              <label htmlFor="login-email" className={`block text-sm font-medium mb-2 ${
                 isDarkMode ? 'text-gray-300' : 'text-gray-700'
               }`}>
                 Email
@@ -94,11 +97,13 @@ const Login = () => {
                   isDarkMode ? 'text-gray-500' : 'text-gray-400'
                 }`} />
                 <input
+                  id="login-email"
                   type="email"
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
                   required
+                  autoComplete="email"
                   className={`w-full pl-11 pr-4 py-3 rounded-xl text-sm transition-colors ${
                     isDarkMode
                       ? 'bg-gray-800 border border-gray-700 text-white placeholder-gray-500 focus:border-red-500'
@@ -111,7 +116,7 @@ const Login = () => {
 
             {/* Password */}
             <div>
-              <label className={`block text-sm font-medium mb-2 ${
+              <label htmlFor="login-password" className={`block text-sm font-medium mb-2 ${
                 isDarkMode ? 'text-gray-300' : 'text-gray-700'
               }`}>
                 Mot de passe
@@ -121,11 +126,13 @@ const Login = () => {
                   isDarkMode ? 'text-gray-500' : 'text-gray-400'
                 }`} />
                 <input
+                  id="login-password"
                   type={showPassword ? 'text' : 'password'}
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
                   required
+                  autoComplete="current-password"
                   className={`w-full pl-11 pr-11 py-3 rounded-xl text-sm transition-colors ${
                     isDarkMode
                       ? 'bg-gray-800 border border-gray-700 text-white placeholder-gray-500 focus:border-red-500'

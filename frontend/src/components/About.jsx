@@ -3,7 +3,7 @@ import { useInView } from 'framer-motion';
 import { useRef } from 'react';
 import { FaDownload, FaUser, FaBriefcase, FaGraduationCap } from 'react-icons/fa';
 import { useTheme } from '../context/ThemeContext';
-import { getProfileImageUrl } from '../utils/imageUtils';
+import { getProfileImageUrl, getPublicImageUrl } from '../utils/imageUtils';
 
 const About = ({ data = {} }) => {
   const ref = useRef(null);
@@ -23,7 +23,7 @@ const About = ({ data = {} }) => {
   ];
 
   const {
-    profile_image = '/images/profile.jpeg',
+    profile_image = getPublicImageUrl('images/profile.jpeg'),
     about_paragraph_1 = 'Passionne par le developpement web et les nouvelles technologies, je transforme des idees creatives en solutions digitales performantes et elegantes.',
     about_paragraph_2 = 'Mon parcours m\'a permis de maitriser l\'ensemble du cycle de developpement, de la conception a la mise en production. Je privilegie toujours l\'ecriture de code propre, maintenable et performant, tout en restant a l\'ecoute des besoins utilisateurs.',
     about_highlights: rawHighlights,
@@ -151,7 +151,7 @@ const About = ({ data = {} }) => {
                   loading="lazy"
                   decoding="async"
                   onError={(e) => {
-                    e.target.src = '/images/profile.jpeg';
+                    e.target.src = getPublicImageUrl('images/profile.jpeg');
                   }}
                 />
 

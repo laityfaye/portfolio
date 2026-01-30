@@ -8,6 +8,7 @@ import {
 import { Link } from 'react-router-dom';
 import { SiReact, SiTypescript, SiNodedotjs, SiMongodb, SiTailwindcss, SiNextdotjs } from 'react-icons/si';
 import { useEffect, useState, useRef } from 'react';
+import { getPublicImageUrl } from '../utils/imageUtils';
 
 /** Compteur animé : décompte 0 → value à l’affichage et au survol. */
 const AnimatedCounter = ({ value, suffix = '', replayTrigger = 0 }) => {
@@ -888,7 +889,7 @@ const TemplatePreview = ({ theme, isDarkMode }) => {
                     }}
                   >
                     <img
-                      src="/images/INNOSOFT%20CREATION.png"
+                      src={getPublicImageUrl('images/INNOSOFT CREATION.png')}
                       alt="Innosoft Portfolio"
                       className="h-14 sm:h-16 w-auto object-contain opacity-95 group-hover:opacity-100 transition-opacity"
                     />

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FaSearch, FaGlobe, FaEyeSlash, FaTrash, FaExternalLinkAlt, FaFilter, FaSun, FaMoon } from 'react-icons/fa';
 import { adminPortfoliosApi } from '../../api/admin';
-import { getProfileImageUrl } from '../../utils/imageUtils';
+import { getProfileImageUrl, getPublicImageUrl } from '../../utils/imageUtils';
 import toast from 'react-hot-toast';
 
 const AdminPortfolios = () => {
@@ -185,7 +185,7 @@ const AdminPortfolios = () => {
                               alt={portfolio.display_name}
                               className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover flex-shrink-0"
                               onError={(e) => {
-                                e.target.src = '/images/profile.jpeg';
+                                e.target.src = getPublicImageUrl('images/profile.jpeg');
                               }}
                             />
                           ) : (

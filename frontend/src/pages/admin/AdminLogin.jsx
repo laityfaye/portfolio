@@ -60,7 +60,7 @@ const AdminLogin = () => {
             <p className="text-slate-400 mt-2">Connectez-vous pour acceder au panel</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6" autoComplete="off">
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">
                 Email
@@ -73,8 +73,9 @@ const AdminLogin = () => {
                   value={formData.email}
                   onChange={handleChange}
                   required
+                  autoComplete="off"
                   className="w-full pl-10 pr-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-                  placeholder="admin@example.com"
+                  placeholder="Votre email"
                 />
               </div>
             </div>
@@ -91,6 +92,7 @@ const AdminLogin = () => {
                   value={formData.password}
                   onChange={handleChange}
                   required
+                  autoComplete="new-password"
                   className="w-full pl-10 pr-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
                   placeholder="••••••••"
                 />

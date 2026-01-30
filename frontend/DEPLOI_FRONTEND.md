@@ -70,19 +70,20 @@ cp -r dist/* /chemin/vers/public_html/p/
 
 ### Option B : VPS avec Nginx (recommandé)
 
+**Structure plateforme mère** : `root /home/tfksservice/innosoft/frontend/dist`
+
 1. Copiez le contenu de `dist/` dans le sous-dossier `p/` du site :
 
 ```bash
-mkdir -p /home/tfksservice/domains/innosft.com/public/p
-cp -r dist/* /home/tfksservice/domains/innosft.com/public/p/
+mkdir -p /home/tfksservice/innosoft/frontend/dist/p
+cp -r ~/portfolio/frontend/dist/* /home/tfksservice/innosoft/frontend/dist/p/
 ```
 
-2. Ajoutez un bloc `location /p/` dans la configuration Nginx existante d'innosft.com pour le **routing côté client** (React Router) :
+2. Ajoutez un bloc `location /p/` dans `/etc/nginx/sites-available/innosft.com` (dans le server block HTTPS, avant `location /`) :
 
 ```nginx
-# À ajouter dans le server block d'innosft.com
 location /p/ {
-    root /home/tfksservice/domains/innosft.com/public;
+    root /home/tfksservice/innosoft/frontend/dist;
     try_files $uri $uri/ /p/index.html;
 }
 ```
@@ -124,8 +125,8 @@ Sur Hostinger mutualisé : activer SSL depuis le hPanel pour innosft.com.
 #!/bin/bash
 cd ~/portfolio/frontend
 npm run build
-mkdir -p /home/tfksservice/domains/innosft.com/public/p
-cp -r dist/* /home/tfksservice/domains/innosft.com/public/p/
+mkdir -p /home/tfksservice/innosoft/frontend/dist/p
+cp -r dist/* /home/tfksservice/innosoft/frontend/dist/p/
 echo "Déploiement terminé ! Plateforme disponible sur https://innosft.com/p/"
 ```
 
