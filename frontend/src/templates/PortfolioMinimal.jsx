@@ -84,7 +84,7 @@ const AnimatedCounter = ({ value, suffix = '', replayTrigger = 0 }) => {
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-const PortfolioPremium = ({ data, slug }) => {
+const PortfolioPremium = ({ data, slug, isPreview = false }) => {
   const { theme, isDarkMode } = useTheme();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('home');
@@ -216,6 +216,10 @@ const PortfolioPremium = ({ data, slug }) => {
   const handleContactSubmit = useCallback(async (e) => {
     e.preventDefault();
     setContactSuccess(null);
+    if (isPreview) {
+      setContactSuccess('Aperçu: le formulaire fonctionne correctement!');
+      return;
+    }
     if (!validateContactForm() || !slug) return;
     setContactSubmitting(true);
     try {
@@ -241,7 +245,7 @@ const PortfolioPremium = ({ data, slug }) => {
     } finally {
       setContactSubmitting(false);
     }
-  }, [slug, contactForm]);
+  }, [slug, contactForm, isPreview]);
 
   const defaultHeroStats = [
     { value: 5, suffix: '+', label: "Années d'expérience" },

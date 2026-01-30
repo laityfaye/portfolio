@@ -13,7 +13,7 @@ import {
 import { useTheme } from '../context/ThemeContext';
 import { portfolioApi } from '../api/portfolio';
 
-const Contact = ({ data = {}, slug }) => {
+const Contact = ({ data = {}, slug, isPreview = false }) => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
   const { theme, isDarkMode } = useTheme();
@@ -92,6 +92,11 @@ const Contact = ({ data = {}, slug }) => {
     setSubmitError(null);
     setSubmitSuccess(null);
 
+    if (isPreview) {
+      setSubmitSuccess('Aperçu: le formulaire fonctionne correctement!');
+      return;
+    }
+
     if (!slug) {
       setSubmitError('Impossible d\'envoyer le message (slug manquant).');
       return;
@@ -117,7 +122,7 @@ const Contact = ({ data = {}, slug }) => {
     } finally {
       setIsSubmitting(false);
     }
-  }, [slug, formData]);
+  }, [slug, formData, isPreview]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
