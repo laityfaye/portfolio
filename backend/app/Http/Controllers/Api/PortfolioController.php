@@ -21,6 +21,31 @@ class PortfolioController extends Controller
         ]);
     }
 
+    /**
+     * Preview portfolio for theme editor (returns full portfolio even if not published)
+     */
+    public function preview(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $portfolio = $user->portfolio()
+            ->with([
+                'skills' => function ($q) {
+                    $q->orderBy('category')->orderBy('sort_order');
+                },
+                'projects' => function ($q) {
+                    $q->orderBy('sort_order');
+                }
+            ])
+            ->firstOrFail();
+
+        return response()->json([
+            'data' => new PortfolioResource($portfolio),
+            'user' => [
+                'slug' => $user->slug,
+            ],
+        ]);
+    }
+
     public function update(UpdatePortfolioRequest $request): JsonResponse
     {
         $portfolio = $request->user()->portfolio;
@@ -132,9 +157,10 @@ class PortfolioController extends Controller
     {
         $user = $request->user();
 
-        if (!$user->isActive()) {
+        if (!$user->hasPaid()) {
             return response()->json([
-                'message' => 'Votre compte doit etre actif pour publier votre portfolio',
+                'message' => 'Vous devez effectuer un paiement pour publier votre portfolio',
+                'requires_payment' => true,
             ], 403);
         }
 

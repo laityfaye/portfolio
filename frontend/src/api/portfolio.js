@@ -18,6 +18,12 @@ export const portfolioApi = {
     return response.data;
   },
 
+  /** Récupère le portfolio complet pour la prévisualisation (même non publié) */
+  getPreview: async () => {
+    const response = await api.get('/portfolio/preview');
+    return response.data;
+  },
+
   /** Télécharge le CV (blob) pour l'ouvrir avec le token d'auth */
   getCvBlob: async () => {
     const response = await api.get('/portfolio/cv', {

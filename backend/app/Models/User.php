@@ -60,4 +60,12 @@ class User extends Authenticatable
     {
         return $this->status === 'pending';
     }
+
+    /**
+     * Vérifie si l'utilisateur a un paiement approuvé
+     */
+    public function hasPaid(): bool
+    {
+        return $this->payments()->where('status', 'approved')->exists();
+    }
 }

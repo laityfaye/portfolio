@@ -36,12 +36,14 @@ class PayTechController extends Controller
             if ($existingPayment) {
                 if ($existingPayment->isApproved()) {
                     return response()->json([
-                        'message' => 'Votre paiement a déjà été approuvé',
-                    ], 400);
+                        'message' => 'Votre paiement a déjà été approuvé. Vous pouvez publier votre portfolio.',
+                        'error_code' => 'PAYMENT_ALREADY_APPROVED',
+                    ], 409);
                 }
                 return response()->json([
-                    'message' => 'Vous avez déjà un paiement en attente',
-                ], 400);
+                    'message' => 'Vous avez déjà un paiement en attente. Consultez la page Paiement pour suivre son statut.',
+                    'error_code' => 'PAYMENT_PENDING',
+                ], 409);
             }
 
             $amount = config('paytech.default_amount', 2500);

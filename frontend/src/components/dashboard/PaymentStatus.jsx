@@ -93,13 +93,17 @@ const PaymentStatus = ({ user }) => {
     setPayTechLoading(true);
     try {
       const response = await paymentsApi.requestPayTech();
-      if (response.redirect_url) {
+      if (response?.redirect_url) {
         window.location.href = response.redirect_url;
       } else {
-        toast.error('Erreur lors de la création du paiement');
+        toast.error(response?.message || 'Erreur lors de la création du paiement');
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Erreur lors de l\'initialisation du paiement');
+      const data = error.response?.data;
+      const msg = data?.message
+        || (typeof data?.errors === 'object' ? Object.values(data.errors).flat().join(' ') : null)
+        || 'Erreur lors de l\'initialisation du paiement. Vérifiez la configuration ou réessayez.';
+      toast.error(msg);
     } finally {
       setPayTechLoading(false);
     }

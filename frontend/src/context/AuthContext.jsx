@@ -86,6 +86,7 @@ export const AuthProvider = ({ children }) => {
     isAuthenticated: !!user,
     isActive: user?.status === 'active',
     isPending: user?.status === 'pending',
+    hasPaid: user?.has_paid || false,
     login,
     register,
     logout,

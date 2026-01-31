@@ -1,14 +1,15 @@
 import { motion } from 'framer-motion';
-import { FaRocket, FaEye, FaEdit, FaClock, FaCheck, FaExclamationTriangle, FaLink, FaShareAlt } from 'react-icons/fa';
+import { FaRocket, FaEye, FaEdit, FaClock, FaCheck, FaExclamationTriangle, FaLink, FaShareAlt, FaCreditCard } from 'react-icons/fa';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { portfolioApi } from '../../api/portfolio';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 const DashboardHome = ({ portfolio, user, onRefresh }) => {
   const { isDarkMode } = useTheme();
-  const { isActive, isPending } = useAuth();
+  const { isActive, isPending, hasPaid } = useAuth();
+  const navigate = useNavigate();
   
   // Thème rouge fixe pour le dashboard
   const dashboardTheme = {
@@ -21,8 +22,9 @@ const DashboardHome = ({ portfolio, user, onRefresh }) => {
   };
 
   const handlePublish = async () => {
-    if (!isActive) {
-      toast.error('Votre compte doit etre actif pour publier');
+    if (!hasPaid) {
+      toast.error('Vous devez effectuer un paiement pour publier votre portfolio');
+      navigate('/dashboard/payment');
       return;
     }
 
@@ -31,7 +33,12 @@ const DashboardHome = ({ portfolio, user, onRefresh }) => {
       toast.success('Portfolio publie avec succes!');
       onRefresh();
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Erreur lors de la publication');
+      if (error.response?.data?.requires_payment) {
+        toast.error('Vous devez effectuer un paiement pour publier votre portfolio');
+        navigate('/dashboard/payment');
+      } else {
+        toast.error(error.response?.data?.message || 'Erreur lors de la publication');
+      }
     }
   };
 
@@ -43,15 +50,15 @@ const DashboardHome = ({ portfolio, user, onRefresh }) => {
 
   const stats = [
     {
-      label: 'Statut compte',
-      value: isActive ? 'Actif' : 'En attente',
-      icon: isActive ? <FaCheck /> : <FaClock />,
-      color: isActive ? 'text-green-500' : 'text-yellow-500',
-      bgColor: isActive ? 'bg-green-500/10 border-green-500/20' : 'bg-yellow-500/10 border-yellow-500/20',
+      label: 'Paiement',
+      value: hasPaid ? 'Validé' : 'En attente',
+      icon: hasPaid ? <FaCheck /> : <FaCreditCard />,
+      color: hasPaid ? 'text-green-500' : 'text-yellow-500',
+      bgColor: hasPaid ? 'bg-green-500/10 border-green-500/20' : 'bg-yellow-500/10 border-yellow-500/20',
     },
     {
       label: 'Statut portfolio',
-      value: portfolio?.status === 'published' ? 'Publie' : 'Brouillon',
+      value: portfolio?.status === 'published' ? 'Publié' : 'Brouillon',
       icon: portfolio?.status === 'published' ? <FaEye /> : <FaEdit />,
       color: portfolio?.status === 'published' ? 'text-green-500' : 'text-blue-500',
       bgColor: portfolio?.status === 'published' ? 'bg-green-500/10 border-green-500/20' : 'bg-blue-500/10 border-blue-500/20',
@@ -156,7 +163,7 @@ const DashboardHome = ({ portfolio, user, onRefresh }) => {
           Actions rapides
         </h2>
         <div className="flex flex-wrap gap-4">
-          {isActive && portfolio?.status !== 'published' && (
+          {portfolio?.status !== 'published' && hasPaid && (
             <motion.button
               onClick={handlePublish}
               className={`w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r ${dashboardTheme.gradient} text-white font-semibold rounded-xl shadow-lg shadow-red-500/30 hover:shadow-xl hover:shadow-red-500/40 transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2 text-sm sm:text-base`}
@@ -166,6 +173,15 @@ const DashboardHome = ({ portfolio, user, onRefresh }) => {
               <FaRocket />
               Publier mon portfolio
             </motion.button>
+          )}
+          {portfolio?.status !== 'published' && !hasPaid && (
+            <Link
+              to="/dashboard/payment"
+              className={`w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-semibold rounded-xl shadow-lg shadow-orange-500/30 hover:shadow-xl hover:shadow-orange-500/40 transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2 text-sm sm:text-base`}
+            >
+              <FaCreditCard />
+              Payer pour publier
+            </Link>
           )}
           {portfolio?.status === 'published' && (
             <motion.a

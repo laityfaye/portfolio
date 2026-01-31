@@ -18,6 +18,7 @@ class UserResource extends JsonResource
             'phone' => $this->phone,
             'slug' => $this->slug,
             'status' => $this->status,
+            'has_paid' => $this->hasPaid(),
             'portfolio' => new PortfolioResource($this->whenLoaded('portfolio')),
             'payments' => PaymentResource::collection($this->whenLoaded('payments')),
             'created_at' => $this->created_at,

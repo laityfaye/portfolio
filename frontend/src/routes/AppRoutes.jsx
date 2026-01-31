@@ -12,6 +12,7 @@ import Login from '../pages/Login';
 import Register from '../pages/Register';
 import Dashboard from '../pages/Dashboard';
 import Portfolio from '../pages/Portfolio';
+import PortfolioPreview from '../pages/PortfolioPreview';
 import NotFound from '../pages/NotFound';
 
 // Admin Pages
@@ -38,6 +39,7 @@ const AppRoutes = () => {
               <Route path="/" element={<Home />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/preview" element={<PortfolioPreview />} />
               <Route path="/:slug" element={<Portfolio />} />
 
               {/* Protected Routes (User) */}

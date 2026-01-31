@@ -1,11 +1,10 @@
 import { useState, useEffect, useMemo } from 'react';
-import { getProfileImageUrl } from '../utils/imageUtils';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useSearchParams, Navigate } from 'react-router-dom';
 import { portfolioApi } from '../api/portfolio';
 import { ThemeProvider, useTheme } from '../context/ThemeContext';
 import ThemeApplier from '../components/ThemeApplier';
 
-// Template Classic (layout actuel)
+// Template Classic
 import Navbar from '../components/Navbar';
 import Hero from '../components/Hero';
 import About from '../components/About';
@@ -15,34 +14,15 @@ import Contact from '../components/Contact';
 import Footer from '../components/Footer';
 import PortfolioMinimal from '../templates/PortfolioMinimal';
 
-const PortfolioContent = ({ data, slug }) => {
+const PortfolioPreviewContent = ({ data }) => {
   const { isDarkMode } = useTheme();
   const portfolioData = data || {};
   const skills = data?.skills || [];
   const projects = data?.projects || [];
   const template = data?.template || 'classic';
 
-  // Preload critical images
-  useEffect(() => {
-    if (portfolioData?.profile_image) {
-      const profileImageUrl = getProfileImageUrl(portfolioData.profile_image);
-      const link = document.createElement('link');
-      link.rel = 'preload';
-      link.as = 'image';
-      link.href = profileImageUrl;
-      link.setAttribute('fetchpriority', 'high');
-      document.head.appendChild(link);
-      
-      return () => {
-        if (document.head.contains(link)) {
-          document.head.removeChild(link);
-        }
-      };
-    }
-  }, [portfolioData?.profile_image]);
-
   if (template === 'minimal') {
-    return <PortfolioMinimal data={data} slug={slug} />;
+    return <PortfolioMinimal data={data} slug="preview" isPreview={true} />;
   }
 
   return (
@@ -54,45 +34,51 @@ const PortfolioContent = ({ data, slug }) => {
         <About data={portfolioData} />
         <Skills skills={skills} />
         <Projects projects={projects} socialLinks={portfolioData?.social_links} />
-        <Contact data={portfolioData} slug={slug} />
+        <Contact data={portfolioData} slug="preview" isPreview={true} />
       </main>
       <Footer data={portfolioData} />
     </div>
   );
 };
 
-const Portfolio = () => {
-  const { slug } = useParams();
+const PortfolioPreview = () => {
   const [searchParams] = useSearchParams();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Preview mode params (from dashboard theme editor)
-  const isPreview = searchParams.get('preview') === '1';
+  // Preview params from ThemeEditor
   const previewTemplate = searchParams.get('template');
   const previewColor = searchParams.get('color');
   const previewMode = searchParams.get('mode');
 
+  // Check if user is authenticated
+  const token = localStorage.getItem('auth_token');
+
   useEffect(() => {
+    if (!token) {
+      setError('Non authentifié');
+      setLoading(false);
+      return;
+    }
+
     const fetchPortfolio = async () => {
       try {
-        const response = await portfolioApi.getPublic(slug);
+        const response = await portfolioApi.getPreview();
         setData(response.data);
       } catch (err) {
-        setError(err.response?.data?.message || 'Portfolio non trouve');
+        setError(err.response?.data?.message || 'Erreur lors du chargement');
       } finally {
         setLoading(false);
       }
     };
 
     fetchPortfolio();
-  }, [slug]);
+  }, [token]);
 
   // Merge data with preview overrides
   const displayData = useMemo(() => {
     if (!data) return null;
-    if (!isPreview) return data;
 
     return {
       ...data,
@@ -100,7 +86,11 @@ const Portfolio = () => {
       theme_color: previewColor || data.theme_color,
       theme_mode: previewMode || data.theme_mode,
     };
-  }, [data, isPreview, previewTemplate, previewColor, previewMode]);
+  }, [data, previewTemplate, previewColor, previewMode]);
+
+  if (!token) {
+    return <Navigate to="/p/login" replace />;
+  }
 
   if (loading) {
     return (
@@ -114,7 +104,7 @@ const Portfolio = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-dark-900 text-white">
         <div className="text-center">
-          <h1 className="text-4xl font-bold mb-4">Portfolio non trouve</h1>
+          <h1 className="text-4xl font-bold mb-4">Erreur</h1>
           <p className="text-gray-400">{error}</p>
         </div>
       </div>
@@ -131,9 +121,9 @@ const Portfolio = () => {
       initialMode={initialMode}
       disableLocalStorage={true}
     >
-      <PortfolioContent data={displayData} slug={slug} />
+      <PortfolioPreviewContent data={displayData} />
     </ThemeProvider>
   );
 };
 
-export default Portfolio;
+export default PortfolioPreview;
