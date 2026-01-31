@@ -8,7 +8,6 @@ import {
 import { useTheme } from '../context/ThemeContext';
 import { getPublicImageUrl } from '../utils/imageUtils';
 import { useAuth } from '../context/AuthContext';
-import TemplatePreview from '../components/TemplatePreview';
 
 // Composant Counter animé
 const AnimatedCounter = ({ value, suffix = '', className }) => {
@@ -32,7 +31,7 @@ const AnimatedCounter = ({ value, suffix = '', className }) => {
 };
 
 const Home = () => {
-  const { theme, isDarkMode, toggleMode } = useTheme();
+  const { isDarkMode, toggleMode } = useTheme();
   const { isAuthenticated } = useAuth();
   const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -723,11 +722,15 @@ const Home = () => {
                     </div>
                     <div className="flex-1 bg-gray-700 rounded-lg px-2 sm:px-4 py-1 sm:py-1.5 text-gray-400 text-xs sm:text-sm flex items-center gap-1 sm:gap-2 min-w-0">
                       <FaGlobe className="text-xs flex-shrink-0" />
-                      <span className="truncate">innosoft.com/p/votre-nom</span>
+                      <span className="truncate">innosft.com/p/laity-faye</span>
                     </div>
                   </div>
-                  {/* Preview content */}
-                  <TemplatePreview theme={theme} isDarkMode={isDarkMode} />
+                  {/* Portfolio Laity Faye en aperçu */}
+                  <iframe
+                    src="https://innosft.com/p/laity-faye"
+                    title="Aperçu du portfolio Laity Faye"
+                    className="w-full h-[70vh] min-h-[400px] border-0"
+                  />
                 </div>
 
                 {/* Theme Colors */}

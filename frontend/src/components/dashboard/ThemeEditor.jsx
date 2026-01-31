@@ -30,8 +30,6 @@ const CustomizationPanel = ({
   setSelectedColor,
   selectedMode,
   setSelectedMode,
-  onSave,
-  loading,
 }) => {
   const { isDarkMode } = useTheme();
 
@@ -142,18 +140,6 @@ const CustomizationPanel = ({
                 {themes[selectedColor]?.name || selectedColor}
               </p>
             </div>
-
-            {/* Save Button */}
-            <motion.button
-              onClick={onSave}
-              disabled={loading}
-              className="w-full py-2.5 bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold rounded-lg shadow-lg shadow-red-500/30 hover:shadow-xl hover:shadow-red-500/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm"
-              whileHover={{ scale: loading ? 1 : 1.02 }}
-              whileTap={{ scale: loading ? 1 : 0.98 }}
-            >
-              <FaSave className="text-xs" />
-              {loading ? 'Enregistrement...' : 'Enregistrer'}
-            </motion.button>
           </div>
         </motion.div>
       )}
@@ -174,6 +160,7 @@ const PreviewModal = ({
   onSave,
   loading,
   isActive,
+  isPublished,
   onPayToPublish,
   payPublishLoading,
 }) => {
@@ -266,33 +253,59 @@ const PreviewModal = ({
                 </span>
               </div>
               <div className="flex items-center gap-1.5 flex-wrap sm:flex-nowrap justify-end">
-                {/* Payer pour publier / Publier */}
+                {/* Enregistrer */}
                 <motion.button
-                  onClick={onPayToPublish}
-                  disabled={payPublishLoading}
-                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg font-semibold text-xs transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
-                    isActive
-                      ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-green-500/30 hover:shadow-green-500/40'
-                      : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-amber-500/30 hover:shadow-amber-500/40'
-                  }`}
-                  whileHover={{ scale: payPublishLoading ? 1 : 1.05 }}
-                  whileTap={{ scale: payPublishLoading ? 1 : 0.95 }}
-                  title={isActive ? 'Publier le portfolio' : 'Payer pour publier'}
+                  onClick={onSave}
+                  disabled={loading}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg font-semibold text-xs transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-r from-red-500 to-red-600 text-white shadow-red-500/30 hover:shadow-red-500/40"
+                  whileHover={{ scale: loading ? 1 : 1.05 }}
+                  whileTap={{ scale: loading ? 1 : 0.95 }}
+                  title="Enregistrer le thème"
                 >
-                  {payPublishLoading ? (
+                  {loading ? (
                     <FaSpinner className="animate-spin" />
-                  ) : isActive ? (
-                    <>
-                      <FaGlobe className="text-xs" />
-                      <span className="hidden sm:inline">Publier</span>
-                    </>
                   ) : (
                     <>
-                      <FaCreditCard className="text-xs" />
-                      <span className="hidden sm:inline">Payer pour publier</span>
+                      <FaSave className="text-xs" />
+                      <span className="hidden sm:inline">Enregistrer</span>
                     </>
                   )}
                 </motion.button>
+
+                {/* Badge Portfolio publié ou Bouton Payer pour publier / Publier */}
+                {isPublished ? (
+                  <span className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg font-semibold text-xs bg-green-500/20 text-green-600 dark:text-green-400 border border-green-500/30`}>
+                    <FaGlobe className="text-xs" />
+                    <span>Portfolio publié</span>
+                  </span>
+                ) : (
+                  <motion.button
+                    onClick={onPayToPublish}
+                    disabled={payPublishLoading}
+                    className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg font-semibold text-xs transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+                      isActive
+                        ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-green-500/30 hover:shadow-green-500/40'
+                        : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-amber-500/30 hover:shadow-amber-500/40'
+                    }`}
+                    whileHover={{ scale: payPublishLoading ? 1 : 1.05 }}
+                    whileTap={{ scale: payPublishLoading ? 1 : 0.95 }}
+                    title={isActive ? 'Publier le portfolio' : 'Payer pour publier'}
+                  >
+                    {payPublishLoading ? (
+                      <FaSpinner className="animate-spin" />
+                    ) : isActive ? (
+                      <>
+                        <FaGlobe className="text-xs" />
+                        <span className="hidden sm:inline">Publier</span>
+                      </>
+                    ) : (
+                      <>
+                        <FaCreditCard className="text-xs" />
+                        <span className="hidden sm:inline">Payer pour publier</span>
+                      </>
+                    )}
+                  </motion.button>
+                )}
 
                 {/* Refresh Button */}
                 <motion.button
@@ -399,8 +412,6 @@ const PreviewModal = ({
                   setSelectedMode(mode);
                   refreshPreview();
                 }}
-                onSave={onSave}
-                loading={loading}
               />
             </div>
           </motion.div>
@@ -667,6 +678,7 @@ const ThemeEditor = ({ portfolio, onUpdate }) => {
         onSave={handleSave}
         loading={loading}
         isActive={isActive}
+        isPublished={portfolio?.status === 'published'}
         onPayToPublish={handlePayToPublish}
         payPublishLoading={payPublishLoading}
       />
