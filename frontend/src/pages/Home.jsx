@@ -9,19 +9,34 @@ import { useTheme } from '../context/ThemeContext';
 import { getPublicImageUrl } from '../utils/imageUtils';
 import { useAuth } from '../context/AuthContext';
 
-// Composant Counter animé
-const AnimatedCounter = ({ value, suffix = '', className }) => {
+// Composant Counter animé - se décompte au chargement et au survol
+const AnimatedCounter = ({ value, suffix = '', className, replayTrigger = 0 }) => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true });
   const motionValue = useMotionValue(0);
-  const springValue = useSpring(motionValue, { duration: 2000, bounce: 0 });
+  const springValue = useSpring(motionValue, { stiffness: 80, damping: 12 });
   const display = useTransform(springValue, (val) => Math.round(val));
 
+  // Animation au chargement (actualisation) et quand la section entre dans la vue
+  // Délai pour synchroniser avec l'apparition de la section stats (delay: 0.4s)
   useEffect(() => {
     if (isInView) {
-      motionValue.set(value);
+      motionValue.set(0);
+      const timer = setTimeout(() => motionValue.set(value), 450);
+      return () => clearTimeout(timer);
     }
   }, [isInView, value, motionValue]);
+
+  // Rejouer l'animation au survol - délai pour que le spring voie 0 avant d'animer vers value
+  useEffect(() => {
+    if (replayTrigger > 0) {
+      motionValue.set(0);
+      const raf = requestAnimationFrame(() => {
+        requestAnimationFrame(() => motionValue.set(value));
+      });
+      return () => cancelAnimationFrame(raf);
+    }
+  }, [replayTrigger, value, motionValue]);
 
   return (
     <span ref={ref} className={className}>
@@ -35,6 +50,7 @@ const Home = () => {
   const { isAuthenticated } = useAuth();
   const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [statHoverKeys, setStatHoverKeys] = useState([0, 0, 0]);
   
   const heroImageUrl = 'https://images.unsplash.com/photo-1551650975-87deedd944c3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1974&q=80';
 
@@ -288,17 +304,27 @@ const Home = () => {
             className="grid grid-cols-3 gap-3 sm:gap-6 max-w-2xl mx-auto px-4"
           >
             {stats.map((stat, index) => (
-              <div key={index} className="text-center">
+              <motion.div
+                key={index}
+                className="text-center cursor-default select-none"
+                onMouseEnter={() => setStatHoverKeys(prev => {
+                  const next = [...prev];
+                  next[index]++;
+                  return next;
+                })}
+                whileHover={{ scale: 1.05 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+              >
                 <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-xl mb-2 sm:mb-3 text-red-500 bg-red-500/10">
                   <span className="text-sm sm:text-base">{stat.icon}</span>
                 </div>
                 <div className="text-xl sm:text-3xl font-black text-white">
-                  <AnimatedCounter value={stat.value} suffix={stat.suffix} />
+                  <AnimatedCounter value={stat.value} suffix={stat.suffix} replayTrigger={statHoverKeys[index]} />
                 </div>
                 <div className="text-xs sm:text-sm font-semibold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
                   {stat.label}
                 </div>
-              </div>
+              </motion.div>
             ))}
           </motion.div>
         </div>

@@ -185,31 +185,33 @@ const PaymentStatus = ({ user }) => {
         </div>
       </motion.div>
 
-      {/* Payment Info */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className={`p-4 sm:p-5 md:p-6 rounded-xl border-2 flex flex-col sm:flex-row items-start gap-3 sm:gap-4 ${
-          isDarkMode
-            ? 'bg-blue-500/10 border-blue-500/30'
-            : 'bg-blue-50 border-blue-200'
-        }`}
-      >
-        <div className={`p-2 sm:p-3 rounded-xl flex-shrink-0 ${
-          isDarkMode ? 'bg-blue-500/20' : 'bg-blue-100'
-        }`}>
-          <FaInfoCircle className={`text-lg sm:text-xl ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className={`text-base sm:text-lg font-bold mb-2 ${isDarkMode ? 'text-blue-400' : 'text-blue-800'}`}>
-            Montant à payer: <span className="text-xl sm:text-2xl">2 500 FCFA</span>
-          </p>
-          <p className={`text-xs sm:text-sm ${isDarkMode ? 'text-blue-300' : 'text-blue-700'}`}>
-            Payez en ligne via Orange Money, Wave ou Free Money (PayTech). Votre compte sera activé automatiquement dès que le paiement est confirmé.
-          </p>
-        </div>
-      </motion.div>
+      {/* Payment Info - Masqué si l'utilisateur a déjà payé */}
+      {!isActive && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className={`p-4 sm:p-5 md:p-6 rounded-xl border-2 flex flex-col sm:flex-row items-start gap-3 sm:gap-4 ${
+            isDarkMode
+              ? 'bg-blue-500/10 border-blue-500/30'
+              : 'bg-blue-50 border-blue-200'
+          }`}
+        >
+          <div className={`p-2 sm:p-3 rounded-xl flex-shrink-0 ${
+            isDarkMode ? 'bg-blue-500/20' : 'bg-blue-100'
+          }`}>
+            <FaInfoCircle className={`text-lg sm:text-xl ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className={`text-base sm:text-lg font-bold mb-2 ${isDarkMode ? 'text-blue-400' : 'text-blue-800'}`}>
+              Montant à payer: <span className="text-xl sm:text-2xl">2 500 FCFA</span>
+            </p>
+            <p className={`text-xs sm:text-sm ${isDarkMode ? 'text-blue-300' : 'text-blue-700'}`}>
+              Payez en ligne via Orange Money, Wave ou Free Money (PayTech). Votre compte sera activé automatiquement dès que le paiement est confirmé.
+            </p>
+          </div>
+        </motion.div>
+      )}
 
       {/* PayTech Button - Primary payment method */}
       {!hasPendingOrApproved && (
