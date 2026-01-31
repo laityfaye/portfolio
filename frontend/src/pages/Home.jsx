@@ -660,7 +660,7 @@ const Home = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-gradient-to-br from-gray-900/95 via-black/95 to-gray-900/95 backdrop-blur-md"
+            className="fixed inset-0 z-50 flex items-center justify-center p-1 sm:p-2 bg-gradient-to-br from-gray-900/95 via-black/95 to-gray-900/95 backdrop-blur-md"
             onClick={() => setShowTemplateModal(false)}
           >
             <motion.div
@@ -668,7 +668,7 @@ const Home = () => {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className={`relative w-full max-w-5xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden rounded-2xl sm:rounded-3xl shadow-2xl ${
+              className={`relative w-full max-w-7xl max-h-[98vh] sm:max-h-[95vh] overflow-hidden rounded-2xl sm:rounded-3xl shadow-2xl ${
                 isDarkMode ? 'bg-gray-900' : 'bg-white'
               }`}
               onClick={(e) => e.stopPropagation()}
@@ -710,7 +710,7 @@ const Home = () => {
               </div>
 
               {/* Full Portfolio Preview - Scrollable */}
-              <div className={`overflow-y-auto max-h-[calc(95vh-200px)] sm:max-h-[calc(90vh-220px)] scrollbar-thin ${isDarkMode ? 'bg-gray-800' : 'bg-gray-100'}`}>
+              <div className={`overflow-y-auto max-h-[calc(98vh-180px)] sm:max-h-[calc(95vh-200px)] scrollbar-thin ${isDarkMode ? 'bg-gray-800' : 'bg-gray-100'}`}>
                 {/* Browser mockup frame */}
                 <div className={`mx-2 sm:mx-4 my-2 sm:my-4 rounded-lg sm:rounded-xl overflow-hidden shadow-xl border ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
                   {/* Browser bar */}
@@ -729,7 +729,7 @@ const Home = () => {
                   <iframe
                     src="https://innosft.com/p/laity-faye"
                     title="Aperçu du portfolio Laity Faye"
-                    className="w-full h-[70vh] min-h-[400px] border-0"
+                    className="w-full h-[75vh] min-h-[500px] border-0"
                   />
                 </div>
 
