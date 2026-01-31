@@ -1,5 +1,7 @@
 # Configuration PayTech
 
+> **Production** : Voir [PAYTECH_PRODUCTION.md](./PAYTECH_PRODUCTION.md) pour la configuration en production sur innosft.com.
+
 Documentation basée exclusivement sur :
 - [Documentation officielle PayTech](https://doc.intech.sn/doc_paytech.php)
 - [Collection Postman PayTech](https://doc.intech.sn/PayTech%20x%20DOC.postman_collection.json)

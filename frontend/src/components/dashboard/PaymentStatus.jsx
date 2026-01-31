@@ -94,6 +94,10 @@ const PaymentStatus = ({ user }) => {
     try {
       const response = await paymentsApi.requestPayTech();
       if (response?.redirect_url) {
+        // Stocker ref_command pour le polling sur la page success
+        if (response.ref_command) {
+          sessionStorage.setItem('paytech_ref_command', response.ref_command);
+        }
         window.location.href = response.redirect_url;
       } else {
         toast.error(response?.message || 'Erreur lors de la création du paiement');
@@ -468,6 +472,13 @@ const PaymentStatus = ({ user }) => {
                             e.target.src = getPublicImageUrl('images/profile.jpeg');
                           }}
                         />
+                      ) : payment.type === 'paytech' ? (
+                        <div className={`w-full h-full flex flex-col items-center justify-center gap-1 ${
+                          isDarkMode ? 'bg-gray-700' : 'bg-gray-100'
+                        }`}>
+                          <FaMobileAlt className={`text-xl sm:text-2xl ${isDarkMode ? 'text-red-400' : 'text-red-500'}`} />
+                          <span className={`text-[10px] font-semibold ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>PayTech</span>
+                        </div>
                       ) : (
                         <div className={`w-full h-full flex items-center justify-center ${
                           isDarkMode ? 'bg-gray-700' : 'bg-gray-100'
@@ -568,7 +579,7 @@ const PaymentStatus = ({ user }) => {
             >
               <div className="flex items-center justify-between mb-3 sm:mb-4">
                 <h3 className={`text-lg sm:text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
-                  Preuve de paiement
+                  {selectedPayment.type === 'paytech' ? 'Détails du paiement PayTech' : 'Preuve de paiement'}
                 </h3>
                 <button
                   onClick={() => setSelectedPayment(null)}
@@ -579,7 +590,23 @@ const PaymentStatus = ({ user }) => {
                   <FaTimes className="text-base sm:text-lg" />
                 </button>
               </div>
-              {selectedPayment.proof_image && (() => {
+              {selectedPayment.type === 'paytech' ? (
+                <div className={`space-y-3 p-4 rounded-xl border ${
+                  isDarkMode ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-50 border-gray-200'
+                }`}>
+                  <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                    <span className="font-semibold">Référence :</span> {selectedPayment.ref_command || '-'}
+                  </p>
+                  {selectedPayment.payment_method && (
+                    <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                      <span className="font-semibold">Méthode :</span> {selectedPayment.payment_method}
+                    </p>
+                  )}
+                  <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                    <span className="font-semibold">Montant :</span> {selectedPayment.amount?.toLocaleString()} {selectedPayment.currency || 'FCFA'}
+                  </p>
+                </div>
+              ) : selectedPayment.proof_image && (() => {
                 const modalImageUrl = getImageUrl(selectedPayment.proof_image);
                 return modalImageUrl ? (
                   <div className="rounded-xl overflow-hidden border-2 border-red-500/30">

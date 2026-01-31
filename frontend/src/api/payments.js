@@ -25,4 +25,14 @@ export const paymentsApi = {
     });
     return response.data;
   },
+
+  /**
+   * Vérifier le statut d'un paiement PayTech (polling après redirection success)
+   */
+  checkPayTechStatus: async (refCommand) => {
+    const response = await api.get('/payments/paytech/check-status', {
+      params: { ref_command: refCommand },
+    });
+    return response.data;
+  },
 };

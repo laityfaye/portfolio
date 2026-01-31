@@ -480,6 +480,9 @@ const ThemeEditor = ({ portfolio, onUpdate }) => {
       } else {
         const response = await paymentsApi.requestPayTech();
         if (response?.redirect_url) {
+          if (response.ref_command) {
+            sessionStorage.setItem('paytech_ref_command', response.ref_command);
+          }
           window.location.href = response.redirect_url;
         } else {
           toast.error(response?.message || 'Erreur lors de la création du paiement');

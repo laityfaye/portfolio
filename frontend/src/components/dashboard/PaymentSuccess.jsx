@@ -1,18 +1,60 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FaCheckCircle, FaArrowRight } from 'react-icons/fa';
+import { FaCheckCircle, FaArrowRight, FaSpinner } from 'react-icons/fa';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
+import { paymentsApi } from '../../api/payments';
+
+const POLL_INTERVAL = 2500;
+const MAX_POLL_ATTEMPTS = 20;
 
 const PaymentSuccess = () => {
   const { isDarkMode } = useTheme();
   const { refreshUser, isActive } = useAuth();
   const navigate = useNavigate();
+  const [checkingStatus, setCheckingStatus] = useState(true);
 
   useEffect(() => {
-    refreshUser?.();
-  }, []);
+    let attempts = 0;
+    const refCommand = sessionStorage.getItem('paytech_ref_command');
+
+    const checkStatus = async () => {
+      if (!refCommand) {
+        setCheckingStatus(false);
+        refreshUser?.();
+        return;
+      }
+
+      try {
+        const { approved } = await paymentsApi.checkPayTechStatus(refCommand);
+        if (approved) {
+          sessionStorage.removeItem('paytech_ref_command');
+          setCheckingStatus(false);
+          refreshUser?.();
+          return;
+        }
+      } catch (err) {
+        if (err?.response?.status === 404) {
+          sessionStorage.removeItem('paytech_ref_command');
+          setCheckingStatus(false);
+          refreshUser?.();
+          return;
+        }
+      }
+
+      attempts++;
+      if (attempts < MAX_POLL_ATTEMPTS) {
+        setTimeout(checkStatus, POLL_INTERVAL);
+      } else {
+        sessionStorage.removeItem('paytech_ref_command');
+        setCheckingStatus(false);
+        refreshUser?.();
+      }
+    };
+
+    checkStatus();
+  }, [refreshUser]);
 
   return (
     <motion.div
@@ -33,8 +75,17 @@ const PaymentSuccess = () => {
             Paiement réussi !
           </h1>
           <p className={`mb-6 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-            Votre paiement a été effectué avec succès. Votre compte sera activé sous peu.
-            {!isActive && ' Actualisez la page dans quelques secondes.'}
+            {checkingStatus ? (
+              <>
+                <FaSpinner className="inline-block animate-spin mr-2" />
+                Vérification de votre paiement en cours...
+              </>
+            ) : (
+              <>
+                Votre paiement a été effectué avec succès.
+                {isActive ? ' Votre compte est maintenant actif.' : ' Votre compte sera activé sous peu.'}
+              </>
+            )}
           </p>
           <div className="flex flex-col sm:flex-row gap-3 w-full">
             <Link

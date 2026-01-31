@@ -55,6 +55,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/payments', [PaymentController::class, 'index']);
     Route::post('/payments/proof', [PaymentController::class, 'uploadProof']);
     Route::post('/payments/paytech/request', [PayTechController::class, 'requestPayment']);
+    Route::get('/payments/paytech/check-status', [PayTechController::class, 'checkStatus']);
 });
 
 // PayTech IPN Webhooks (sans auth - PayTech appelle ces URLs)

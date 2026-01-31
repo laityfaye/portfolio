@@ -100,6 +100,40 @@ class PayTechController extends Controller
             'redirect_url' => $response['redirect_url'] ?? $response['redirectUrl'],
             'token' => $response['token'] ?? null,
             'payment_id' => $payment->id,
+            'ref_command' => $refCommand,
+        ]);
+    }
+
+    /**
+     * Vérifier le statut d'un paiement PayTech - Pour le polling après redirection success
+     * GET /api/payments/paytech/check-status?ref_command=xxx
+     */
+    public function checkStatus(Request $request): JsonResponse
+    {
+        $refCommand = $request->query('ref_command');
+        if (empty($refCommand)) {
+            return response()->json(['message' => 'ref_command requis'], 400);
+        }
+
+        $payment = Payment::where('ref_command', $refCommand)
+            ->where('user_id', $request->user()->id)
+            ->first();
+
+        if (!$payment) {
+            return response()->json(['message' => 'Paiement non trouvé'], 404);
+        }
+
+        return response()->json([
+            'status' => $payment->status,
+            'approved' => $payment->isApproved(),
+            'payment' => [
+                'id' => $payment->id,
+                'ref_command' => $payment->ref_command,
+                'amount' => $payment->amount,
+                'currency' => $payment->currency,
+                'payment_method' => $payment->payment_method,
+                'type' => $payment->type,
+            ],
         ]);
     }
 
