@@ -28,6 +28,7 @@ const About = ({ data = {} }) => {
     about_paragraph_2 = 'Mon parcours m\'a permis de maitriser l\'ensemble du cycle de developpement, de la conception a la mise en production. Je privilegie toujours l\'ecriture de code propre, maintenable et performant, tout en restant a l\'ecoute des besoins utilisateurs.',
     about_highlights: rawHighlights,
     about_stats: rawStats,
+    skills: rawSkills = [],
     cv_file = null
   } = data;
 
@@ -47,7 +48,39 @@ const About = ({ data = {} }) => {
   };
 
   const about_highlights = parseIfNeeded(rawHighlights, defaultHighlights);
-  const about_stats = parseIfNeeded(rawStats, defaultStats);
+
+  // Construire about_stats avec les vraies valeurs : about_stats (commits, technologies) + skills.length pour Technologies
+  const buildAboutStats = () => {
+    const skills = parseIfNeeded(rawSkills, []);
+    const technologiesCount = skills.length;
+
+    // about_stats peut être un objet { commits, technologies } (format dashboard) ou un tableau legacy
+    if (rawStats && typeof rawStats === 'object' && !Array.isArray(rawStats) && ('commits' in rawStats || 'technologies' in rawStats)) {
+      const commits = Number(rawStats.commits) || 0;
+      const technologies = technologiesCount > 0 ? technologiesCount : (Number(rawStats.technologies) || 0);
+      return [
+        { value: `${commits}+`, label: 'Commits GitHub' },
+        { value: `${technologies}+`, label: 'Technologies' }
+      ];
+    }
+    // Format tableau legacy
+    if (Array.isArray(rawStats) && rawStats.length >= 2) {
+      const technologies = technologiesCount > 0 ? technologiesCount : (parseInt(rawStats[1]?.value, 10) || 25);
+      return [
+        rawStats[0] || { value: '150+', label: 'Commits GitHub' },
+        { value: `${technologies}+`, label: 'Technologies' }
+      ];
+    }
+    // Valeurs par défaut avec technologies réelles si dispo
+    if (technologiesCount > 0) {
+      return [
+        { value: '150+', label: 'Commits GitHub' },
+        { value: `${technologiesCount}+`, label: 'Technologies' }
+      ];
+    }
+    return defaultStats;
+  };
+  const about_stats = buildAboutStats();
 
   // Map des icones
   const iconMap = {
