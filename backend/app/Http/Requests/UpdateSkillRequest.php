@@ -15,7 +15,7 @@ class UpdateSkillRequest extends FormRequest
     {
         return [
             'name' => 'sometimes|string|max:100',
-            'icon' => 'sometimes|string|max:50',
+            'icon' => 'nullable|sometimes|string|max:50',
             'level' => 'sometimes|integer|min:0|max:100',
             'category' => 'sometimes|string|max:50|regex:/^[a-z][a-z0-9_]*$/',
         ];

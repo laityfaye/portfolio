@@ -656,24 +656,24 @@ const Home = () => {
       </section>
 
       {/* Footer */}
-      <footer className={`py-8 sm:py-12 px-4 sm:px-6 ${isDarkMode ? 'bg-black' : 'bg-gray-900'}`}>
-        <div className="container mx-auto">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4 sm:gap-6">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center">
-                <span className="text-white font-bold text-base sm:text-lg">IS</span>
+      <footer className={`py-6 sm:py-8 md:py-12 px-3 xs:px-4 sm:px-6 overflow-x-hidden ${isDarkMode ? 'bg-black' : 'bg-gray-900'}`}>
+        <div className="container mx-auto max-w-7xl">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 sm:gap-6 text-center md:text-left">
+            <div className="flex items-center gap-2 justify-center md:justify-start">
+              <div className="w-7 h-7 xs:w-8 xs:h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-red-500 to-red-600 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0">
+                <span className="text-white font-bold text-sm xs:text-base sm:text-lg">IS</span>
               </div>
-              <span className="text-lg sm:text-xl font-bold text-white">
+              <span className="text-base xs:text-lg sm:text-xl font-bold text-white">
                 Inno<span className="text-red-500">Soft</span>
               </span>
             </div>
-            <p className="text-gray-500 text-sm sm:text-base text-center md:text-left">
+            <p className="text-gray-500 text-xs xs:text-sm sm:text-base">
               © 2025 InnoSoft Portfolio. Tous droits reserves.
             </p>
-            <div className="flex flex-wrap gap-3 sm:gap-4 justify-center md:justify-end">
-              <a href="#" className="text-gray-500 hover:text-red-500 transition-colors text-sm sm:text-base">Conditions</a>
-              <a href="#" className="text-gray-500 hover:text-red-500 transition-colors text-sm sm:text-base">Confidentialite</a>
-              <a href="#" className="text-gray-500 hover:text-red-500 transition-colors text-sm sm:text-base">Contact</a>
+            <div className="flex flex-wrap gap-2 xs:gap-3 sm:gap-4 justify-center">
+              <a href="#" className="text-gray-500 hover:text-red-500 transition-colors text-xs xs:text-sm sm:text-base">Conditions</a>
+              <a href="#" className="text-gray-500 hover:text-red-500 transition-colors text-xs xs:text-sm sm:text-base">Confidentialite</a>
+              <a href="#" className="text-gray-500 hover:text-red-500 transition-colors text-xs xs:text-sm sm:text-base">Contact</a>
             </div>
           </div>
         </div>

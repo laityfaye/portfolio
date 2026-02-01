@@ -26,20 +26,41 @@ const Skills = ({ skills: rawSkills = [] }) => {
 
   const skills = parseIfNeeded(rawSkills, []);
 
-  // Grouper les skills par categorie
-  const categories = [
-    { key: 'frontend', title: 'Frontend' },
-    { key: 'backend', title: 'Backend' },
-    { key: 'database_tools', title: 'Database & Tools' }
-  ];
+  // Labels des catégories (alignés avec SkillsEditor)
+  const CATEGORY_LABELS = {
+    frontend: 'Frontend',
+    backend: 'Backend',
+    database_tools: 'Database & Tools',
+    reseau: 'Réseaux',
+    geomatique: 'Géomatique',
+    genie_civil: 'Génie Civil',
+    mobile: 'Mobile',
+    devops: 'DevOps',
+    autre: 'Autre',
+  };
+  const CATEGORY_ORDER = ['frontend', 'backend', 'database_tools', 'reseau', 'geomatique', 'genie_civil', 'mobile', 'devops', 'autre'];
 
-  // Grouper les skills
+  // Grouper les skills par categorie
   const groupedSkills = skills.reduce((acc, skill) => {
-    const category = skill.category || 'frontend';
+    const category = (skill.category || 'frontend').toLowerCase().trim();
     if (!acc[category]) acc[category] = [];
     acc[category].push(skill);
     return acc;
   }, {});
+
+  // Toutes les catégories avec des skills, ordonnées + personnalisées
+  const categories = [
+    ...CATEGORY_ORDER.filter((k) => (groupedSkills[k]?.length ?? 0) > 0).map((key) => ({
+      key,
+      title: CATEGORY_LABELS[key] ?? key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
+    })),
+    ...Object.keys(groupedSkills)
+      .filter((k) => !CATEGORY_ORDER.includes(k))
+      .map((key) => ({
+        key,
+        title: key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
+      })),
+  ];
 
   // Donnees par defaut si pas de skills
   const defaultSkills = {
@@ -64,6 +85,27 @@ const Skills = ({ skills: rawSkills = [] }) => {
 
   // Utiliser les skills fournis ou les valeurs par defaut
   const displaySkills = skills.length > 0 ? groupedSkills : defaultSkills;
+
+  // Catégories à afficher (avec données par défaut si vide)
+  const displayCategories = skills.length > 0 ? categories : [
+    { key: 'frontend', title: 'Frontend' },
+    { key: 'backend', title: 'Backend' },
+    { key: 'database_tools', title: 'Database & Tools' },
+  ];
+
+  // Grouper les catégories par nombre de technologies (pour les aligner côte à côte)
+  const categoriesByCount = displayCategories.reduce((acc, category) => {
+    const count = (displaySkills[category.key] || []).length;
+    if (count === 0) return acc;
+    if (!acc[count]) acc[count] = [];
+    acc[count].push(category);
+    return acc;
+  }, {});
+
+  // Rangs ordonnés par nombre de technologies (décroissant)
+  const countRows = Object.keys(categoriesByCount)
+    .map(Number)
+    .sort((a, b) => b - a);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -137,18 +179,29 @@ const Skills = ({ skills: rawSkills = [] }) => {
           </p>
         </motion.div>
 
-        {/* Skills Categories */}
-        <div className="space-y-6 sm:space-y-12">
-          {categories.map((category, categoryIndex) => {
-            const categorySkills = displaySkills[category.key] || [];
-            if (categorySkills.length === 0) return null;
-
+        {/* Skills Categories - regroupées par nombre de technologies, côte à côte sur PC */}
+        <div className="flex flex-col gap-6 sm:gap-12">
+          {countRows.map((count, rowIndex) => {
+            const rowCategories = categoriesByCount[count] || [];
             return (
-              <motion.div
-                key={category.key}
-                variants={itemVariants}
-                className="space-y-3 sm:space-y-6"
+              <div
+                key={count}
+                className={`grid gap-6 sm:gap-12 ${
+                  rowCategories.length >= 2
+                    ? 'grid-cols-1 lg:grid-cols-2'
+                    : 'grid-cols-1'
+                }`}
               >
+                {rowCategories.map((category, categoryIndex) => {
+                  const categorySkills = displaySkills[category.key] || [];
+                  if (categorySkills.length === 0) return null;
+
+                  return (
+                    <motion.div
+                      key={category.key}
+                      variants={itemVariants}
+                      className="space-y-3 sm:space-y-6"
+                    >
                 {/* Category Title */}
                 <h3 className="text-lg sm:text-3xl font-bold text-center sm:text-left">
                   <span className={`bg-gradient-to-r ${theme.gradient} bg-clip-text text-transparent`}>
@@ -156,24 +209,26 @@ const Skills = ({ skills: rawSkills = [] }) => {
                   </span>
                 </h3>
 
-                {/* Skills Grid */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+                {/* Skills - une technologie par ligne */}
+                <div className="flex flex-col gap-3 sm:gap-6">
                   {categorySkills.map((skill, skillIndex) => (
                     <motion.div
                       key={skill.name}
                       className="card group relative overflow-hidden"
                       initial={{ opacity: 0, scale: 0.8 }}
                       animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
-                      transition={{ delay: categoryIndex * 0.2 + skillIndex * 0.05 }}
+                      transition={{ delay: rowIndex * 0.2 + categoryIndex * 0.1 + skillIndex * 0.05 }}
                       whileHover={{ y: -5 }}
                     >
                       {/* Skill Icon & Name */}
                       <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-4">
-                        <div className="text-2xl sm:text-4xl" style={{ color: theme.primary.main }}>
-                          {getIcon(skill.icon)}
-                        </div>
-                        <div>
-                          <h4 className={`text-xs sm:text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+                        {getIcon(skill.icon) && (
+                          <div className="text-2xl sm:text-4xl shrink-0" style={{ color: theme.primary.main }}>
+                            {getIcon(skill.icon)}
+                          </div>
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <h4 className={`text-xs sm:text-lg font-semibold break-words ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
                             {skill.name}
                           </h4>
                         </div>
@@ -192,7 +247,7 @@ const Skills = ({ skills: rawSkills = [] }) => {
                             animate={isInView ? { width: `${skill.level}%` } : { width: 0 }}
                             transition={{
                               duration: 1,
-                              delay: categoryIndex * 0.2 + skillIndex * 0.05 + 0.3,
+                              delay: rowIndex * 0.2 + categoryIndex * 0.1 + skillIndex * 0.05 + 0.3,
                               ease: "easeOut"
                             }}
                           />
@@ -207,7 +262,10 @@ const Skills = ({ skills: rawSkills = [] }) => {
                     </motion.div>
                   ))}
                 </div>
-              </motion.div>
+                  </motion.div>
+                  );
+                })}
+              </div>
             );
           })}
         </div>

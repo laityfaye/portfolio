@@ -30,7 +30,7 @@ const SkillsEditor = ({ portfolio, onUpdate }) => {
 
   const [formData, setFormData] = useState({
     name: '',
-    icon: 'FaReact',
+    icon: '',
     level: 50,
     category: 'frontend',
   });
@@ -62,7 +62,7 @@ const SkillsEditor = ({ portfolio, onUpdate }) => {
       }
       setShowForm(false);
       setEditingId(null);
-      setFormData({ name: '', icon: 'FaReact', level: 50, category: 'frontend' });
+      setFormData({ name: '', icon: '', level: 50, category: 'frontend' });
       fetchSkills();
       onUpdate();
     } catch (error) {
@@ -128,13 +128,13 @@ const SkillsEditor = ({ portfolio, onUpdate }) => {
     { value: 'autre', label: 'Autre (personnalisée)' },
   ];
 
-  // Fonction pour suggérer automatiquement l'icône basée sur le nom
+  // Fonction pour suggérer automatiquement l'icône basée sur le nom - retourne null si aucune correspondance
   const suggestIcon = (skillName) => {
-    if (!skillName) return 'FaReact';
+    if (!skillName) return null;
     
     const name = skillName.toLowerCase().trim();
     
-    // Mapping intelligent des noms vers les icônes
+    // Mapping intelligent des noms vers les icônes (uniquement ceux disponibles)
     const iconMapping = {
       // Frontend
       'react': 'FaReact',
@@ -187,6 +187,15 @@ const SkillsEditor = ({ portfolio, onUpdate }) => {
       'git': 'FaGitAlt',
       'aws': 'FaAws',
       'amazon': 'FaAws',
+
+      // Mobile
+      'flutter': 'SiFlutter',
+      'kotlin': 'SiKotlin',
+      'swift': 'SiSwift',
+      'ionic': 'SiIonic',
+      'dart': 'SiDart',
+      'react native': 'SiReact',
+      'reactnative': 'SiReact',
     };
 
     // Recherche exacte
@@ -201,10 +210,8 @@ const SkillsEditor = ({ portfolio, onUpdate }) => {
       }
     }
 
-    // Par défaut selon la catégorie
-    return formData.category === 'frontend' ? 'FaReact' : 
-           formData.category === 'backend' ? 'FaNodeJs' : 
-           'FaDatabase';
+    // Aucune icône trouvée - ne pas en afficher
+    return null;
   };
 
   // Fonction pour obtenir les icônes pertinentes selon la catégorie
@@ -213,6 +220,7 @@ const SkillsEditor = ({ portfolio, onUpdate }) => {
       frontend: ['FaReact', 'FaVuejs', 'FaAngular', 'FaHtml5', 'FaCss3Alt', 'FaJs', 'SiTypescript', 'SiTailwindcss', 'SiNextdotjs', 'SiRedux'],
       backend: ['FaNodeJs', 'FaPython', 'FaPhp', 'FaJava', 'SiExpress', 'SiLaravel', 'SiDjango', 'SiGraphql', 'SiGo', 'SiRust'],
       database_tools: ['FaDocker', 'FaGitAlt', 'FaAws', 'SiMongodb', 'SiPostgresql', 'SiMysql', 'SiFirebase', 'FaDatabase'],
+      mobile: ['SiFlutter', 'SiKotlin', 'SiSwift', 'SiIonic', 'SiDart'],
     };
 
     const suggestedIcon = formData.name ? suggestIcon(formData.name) : null;
@@ -227,12 +235,13 @@ const SkillsEditor = ({ portfolio, onUpdate }) => {
     return skillIcons.filter(icon => relevantIcons.includes(icon.name));
   };
 
-  // Mettre à jour l'icône automatiquement quand le nom change
+  // Mettre à jour l'icône automatiquement quand le nom change (null si aucune correspondance)
   useEffect(() => {
     if (formData.name && showForm) {
       const suggestedIcon = suggestIcon(formData.name);
-      if (suggestedIcon !== formData.icon) {
-        setFormData(prev => ({ ...prev, icon: suggestedIcon }));
+      const newIcon = suggestedIcon !== null ? suggestedIcon : '';
+      if (newIcon !== formData.icon) {
+        setFormData(prev => ({ ...prev, icon: newIcon }));
       }
     }
   }, [formData.name, formData.category, showForm]);
@@ -278,7 +287,7 @@ const SkillsEditor = ({ portfolio, onUpdate }) => {
           <motion.button
             onClick={() => {
               setEditingId(null);
-              setFormData({ name: '', icon: 'FaReact', level: 50, category: 'frontend' });
+              setFormData({ name: '', icon: '', level: 50, category: 'frontend' });
               setShowForm(true);
             }}
             className={`px-6 py-3 bg-gradient-to-r ${dashboardTheme.gradient} text-white font-semibold rounded-xl shadow-lg shadow-red-500/30 hover:shadow-xl hover:shadow-red-500/40 transition-all flex items-center gap-2`}
@@ -327,12 +336,14 @@ const SkillsEditor = ({ portfolio, onUpdate }) => {
                             isDarkMode ? 'border-gray-800' : 'border-gray-200'
                           }`}
                         >
-                          <div className={`text-3xl mb-2 flex justify-center ${
-                            isDarkMode ? 'text-red-400' : 'text-red-500'
-                          }`}>
-                            {getIcon(skill.icon)}
-                          </div>
-                          <p className={`font-semibold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+                          {getIcon(skill.icon) && (
+                            <div className={`text-3xl mb-2 flex justify-center ${
+                              isDarkMode ? 'text-red-400' : 'text-red-500'
+                            }`}>
+                              {getIcon(skill.icon)}
+                            </div>
+                          )}
+                          <p className={`font-semibold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-800'} ${!getIcon(skill.icon) ? 'mt-0' : ''}`}>
                             {skill.name}
                           </p>
                           <div className="w-full bg-gray-200 rounded-full h-2">
@@ -414,7 +425,7 @@ const SkillsEditor = ({ portfolio, onUpdate }) => {
                     } ${formData.name ? (isDarkMode ? 'border border-green-500/30' : 'border border-green-300') : ''}`}
                     placeholder="React, Node.js, Python..."
                   />
-                  {formData.name && (
+                  {formData.name && suggestIcon(formData.name) && (
                     <p className={`text-xs mt-1 flex items-center gap-1 ${
                       isDarkMode ? 'text-gray-400' : 'text-gray-500'
                     }`}>
@@ -428,9 +439,9 @@ const SkillsEditor = ({ portfolio, onUpdate }) => {
                   <label className={`flex items-center gap-2 text-sm font-semibold mb-2 ${
                     isDarkMode ? 'text-gray-300' : 'text-gray-700'
                   }`}>
-                    Icône
+                    Icône <span className="text-xs font-normal opacity-70">(optionnel)</span>
                     {formData.icon && <FaCheck className="text-green-500 text-xs" />}
-                    {formData.name && (
+                    {formData.name && suggestIcon(formData.name) && (
                       <span className={`text-xs px-2 py-0.5 rounded-full ${
                         isDarkMode ? 'bg-green-500/20 text-green-400' : 'bg-green-100 text-green-600'
                       }`}>
@@ -442,17 +453,25 @@ const SkillsEditor = ({ portfolio, onUpdate }) => {
                     isDarkMode ? 'bg-gray-900/50 border-gray-800' : 'bg-gray-50 border-gray-200'
                   }`}>
                     <div className="text-center">
-                      <div className={`text-5xl mb-2 flex justify-center ${
-                        isDarkMode ? 'text-red-400' : 'text-red-500'
-                      }`}>
-                        {getIcon(formData.icon)}
-                      </div>
-                      <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                        Aperçu
-                      </p>
-                      {formData.name && (
-                        <p className={`text-xs mt-1 ${isDarkMode ? 'text-green-400' : 'text-green-600'}`}>
-                          ✓ Icône suggérée pour "{formData.name}"
+                      {getIcon(formData.icon) ? (
+                        <>
+                          <div className={`text-5xl mb-2 flex justify-center ${
+                            isDarkMode ? 'text-red-400' : 'text-red-500'
+                          }`}>
+                            {getIcon(formData.icon)}
+                          </div>
+                          <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                            Aperçu
+                          </p>
+                          {formData.name && suggestIcon(formData.name) && (
+                            <p className={`text-xs mt-1 ${isDarkMode ? 'text-green-400' : 'text-green-600'}`}>
+                              ✓ Icône suggérée pour "{formData.name}"
+                            </p>
+                          )}
+                        </>
+                      ) : (
+                        <p className={`text-sm ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+                          {formData.name ? 'Aucune icône pour cette technologie' : 'Sélectionnez ou saisissez une technologie'}
                         </p>
                       )}
                     </div>
@@ -477,6 +496,23 @@ const SkillsEditor = ({ portfolio, onUpdate }) => {
                   )}
                   
                   <div className="grid grid-cols-4 gap-2 max-h-48 overflow-y-auto scrollbar-thin">
+                    {/* Option "Aucune icône" */}
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, icon: '' })}
+                      className={`p-3 rounded-lg transition-all border ${
+                        !formData.icon
+                          ? `bg-gradient-to-r ${dashboardTheme.gradient} text-white border-red-500 shadow-lg shadow-red-500/30`
+                          : isDarkMode
+                            ? 'bg-gray-800 text-gray-400 hover:bg-gray-700 border-gray-700'
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200 border-gray-200'
+                      }`}
+                    >
+                      <div className="text-xl flex justify-center mb-1">
+                        <FaTimes className="opacity-60" />
+                      </div>
+                      <div className="text-[10px] truncate">Aucune</div>
+                    </button>
                     {(showAllIcons ? skillIcons : getRelevantIcons().slice(0, 4)).map((icon) => {
                       const isSuggested = formData.name && suggestIcon(formData.name) === icon.name;
                       const isRelevant = getRelevantIcons().some(relIcon => relIcon.name === icon.name);
@@ -793,12 +829,14 @@ const SkillsEditor = ({ portfolio, onUpdate }) => {
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4 flex-1">
-                        <div className={`text-3xl ${
-                          isDarkMode ? 'text-red-400' : 'text-red-500'
-                        }`}>
-                          {getIcon(skill.icon)}
-                        </div>
-                        <div className="flex-1">
+                        {getIcon(skill.icon) && (
+                          <div className={`text-3xl flex-shrink-0 ${
+                            isDarkMode ? 'text-red-400' : 'text-red-500'
+                          }`}>
+                            {getIcon(skill.icon)}
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
                           <p className={`font-semibold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
                             {skill.name}
                           </p>

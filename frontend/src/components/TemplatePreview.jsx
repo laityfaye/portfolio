@@ -832,18 +832,18 @@ const TemplatePreview = ({ theme, isDarkMode }) => {
 
       {/* Footer — même design que PortfolioMinimal (carte Innosoft + bas de pied) */}
       <footer
-        className="border-t"
+        className="border-t overflow-x-hidden"
         style={{
           backgroundColor: tokens.surface,
           borderColor: tokens.border,
         }}
       >
         {/* Carte Innosoft Portfolio — design exceptionnel */}
-        <div className="px-4 xs:px-6 sm:px-8 md:px-12 lg:px-20 py-8 sm:py-10">
+        <div className="px-3 xs:px-4 sm:px-6 md:px-12 lg:px-20 py-6 sm:py-8 md:py-10">
           <div className="max-w-4xl mx-auto">
             <Link to="/" className="block no-underline">
               <motion.div
-                className="group relative overflow-hidden rounded-3xl p-6 sm:p-8 md:p-10 transition-all duration-500"
+                className="group relative overflow-hidden rounded-2xl sm:rounded-3xl p-4 xs:p-5 sm:p-6 md:p-8 lg:p-10 transition-all duration-500"
                 style={{
                   background: isDarkMode
                     ? `linear-gradient(135deg, ${tokens.surfaceElevated} 0%, ${tokens.surfaceAlt} 100%)`
@@ -881,7 +881,7 @@ const TemplatePreview = ({ theme, isDarkMode }) => {
                 <div className="relative flex flex-col sm:flex-row items-center gap-8 sm:gap-10">
                   {/* Logo dans un cadre */}
                   <div
-                    className="shrink-0 flex items-center justify-center rounded-2xl p-5 sm:p-6 transition-all duration-300 group-hover:scale-[1.02]"
+                    className="shrink-0 flex items-center justify-center rounded-xl sm:rounded-2xl p-3 xs:p-4 sm:p-5 md:p-6 transition-all duration-300 group-hover:scale-[1.02]"
                     style={{
                       backgroundColor: `${primary}08`,
                       border: `1px solid ${primary}20`,
@@ -893,12 +893,12 @@ const TemplatePreview = ({ theme, isDarkMode }) => {
                       alt="Innosoft Portfolio"
                       decoding="async"
                       loading="lazy"
-                      className="h-14 sm:h-16 w-auto object-contain opacity-95 group-hover:opacity-100 transition-opacity"
+                      className="h-10 xs:h-12 sm:h-14 md:h-16 w-auto object-contain opacity-95 group-hover:opacity-100 transition-opacity"
                     />
                   </div>
                   {/* Texte + CTA */}
-                  <div className="flex-1 text-center sm:text-left min-w-0">
-                    <p className="text-base sm:text-lg font-semibold mb-2" style={{ color: tokens.text }}>
+                  <div className="flex-1 text-center sm:text-left min-w-0 w-full">
+                    <p className="text-sm xs:text-base sm:text-lg font-semibold mb-1.5 sm:mb-2 break-words" style={{ color: tokens.text }}>
                       Ce portfolio a été créé avec{' '}
                       <span
                         className="font-bold bg-clip-text"
@@ -910,11 +910,11 @@ const TemplatePreview = ({ theme, isDarkMode }) => {
                         Innosoft Portfolio
                       </span>
                     </p>
-                    <p className="text-sm sm:text-base mb-6 max-w-xl" style={{ color: tokens.textMuted }}>
+                    <p className="text-xs xs:text-sm sm:text-base mb-4 sm:mb-6 max-w-xl mx-auto sm:mx-0" style={{ color: tokens.textMuted }}>
                       Créez le vôtre en quelques clics, personnalisez votre design et partagez votre parcours avec le monde.
                     </p>
                     <motion.span
-                      className="inline-flex items-center gap-2 text-sm font-semibold rounded-xl px-6 py-3 transition-all duration-300"
+                      className="inline-flex items-center justify-center gap-1.5 sm:gap-2 text-xs xs:text-sm font-semibold rounded-lg sm:rounded-xl px-4 py-2.5 sm:px-6 sm:py-3 transition-all duration-300"
                       style={{
                         color: '#FFFFFF',
                         background: `linear-gradient(135deg, ${primary}, ${accent || primary})`,
@@ -938,26 +938,26 @@ const TemplatePreview = ({ theme, isDarkMode }) => {
         </div>
 
         {/* Bas de pied de page */}
-        <div className="py-8 px-4 xs:px-6 sm:px-8 md:px-12 lg:px-20">
+        <div className="py-6 sm:py-8 px-3 xs:px-4 sm:px-6 md:px-12 lg:px-20">
           <div className="max-w-7xl mx-auto">
-            <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4 sm:gap-6 text-center md:text-left">
               <div>
-                <div className="text-xl font-bold mb-1" style={{ color: tokens.text }}>
+                <div className="text-base xs:text-lg sm:text-xl font-bold mb-0.5 sm:mb-1" style={{ color: tokens.text }}>
                   {sampleData.display_name}
                   <span style={{ color: primary }}>.</span>
                 </div>
-                <div className="text-sm" style={{ color: tokens.textMuted }}>
+                <div className="text-xs xs:text-sm" style={{ color: tokens.textMuted }}>
                   © {new Date().getFullYear()} Tous droits réservés
                 </div>
               </div>
 
-              <div className="flex items-center gap-6">
+              <div className="flex flex-wrap items-center justify-center gap-2 xs:gap-3 sm:gap-4 md:gap-6">
                 {navItems.slice(1).map((item) => (
                   <a
                     key={item.href}
                     href={item.href}
                     onClick={(e) => scrollTo(e, item.href)}
-                    className="text-sm font-medium transition-all duration-300 hover:opacity-70 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 rounded-lg px-2 py-1"
+                    className="text-xs xs:text-sm font-medium transition-all duration-300 hover:opacity-70 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 rounded-lg px-2 py-1 whitespace-nowrap"
                     style={{ color: tokens.textMuted }}
                   >
                     {item.name}
@@ -968,7 +968,7 @@ const TemplatePreview = ({ theme, isDarkMode }) => {
               <motion.a
                 href="#home"
                 onClick={(e) => scrollTo(e, '#home')}
-                className="inline-flex items-center gap-2 text-sm font-semibold transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 rounded-full px-5 py-2.5"
+                className="inline-flex items-center justify-center gap-1.5 sm:gap-2 text-xs xs:text-sm font-semibold transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 rounded-full px-4 py-2 sm:px-5 sm:py-2.5"
                 style={{
                   color: tokens.text,
                   backgroundColor: `${primary}08`,

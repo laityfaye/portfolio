@@ -926,7 +926,7 @@ const PortfolioPremium = ({ data, slug, isPreview = false }) => {
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
             {categories.map((cat, idx) => {
               const items = grouped[cat.key] || [];
               if (items.length === 0) return null;
@@ -954,8 +954,8 @@ const PortfolioPremium = ({ data, slug, isPreview = false }) => {
                       <div className="w-6 sm:w-8 h-1 rounded-full mt-2" style={{ backgroundColor: primary }} />
                     </h3>
 
-                    {/* Skills grid */}
-                    <div className="grid grid-cols-2 gap-2 sm:gap-3 md:gap-4">
+                    {/* Skills - une technologie par ligne */}
+                    <div className="flex flex-col gap-2 sm:gap-3 md:gap-4">
                       {items.map((s, j) => (
                         <motion.div
                           key={j}
@@ -971,11 +971,13 @@ const PortfolioPremium = ({ data, slug, isPreview = false }) => {
                           transition={{ delay: j * 0.05 }}
                         >
                           <div className="flex items-center gap-2 sm:gap-3">
-                            <div className="text-lg sm:text-xl shrink-0" style={{ color: primary }}>
-                              {getIcon(s.icon)}
-                            </div>
+                            {getIcon(s.icon) && (
+                              <div className="text-lg sm:text-xl shrink-0" style={{ color: primary }}>
+                                {getIcon(s.icon)}
+                              </div>
+                            )}
                             <div className="min-w-0 flex-1">
-                              <div className="font-semibold text-xs sm:text-sm truncate" style={{ color: tokens.text }}>
+                              <div className="font-semibold text-xs sm:text-sm break-words" style={{ color: tokens.text }}>
                                 {s.name}
                               </div>
                               {s.level != null && (
@@ -1461,14 +1463,14 @@ const PortfolioPremium = ({ data, slug, isPreview = false }) => {
 
       {/* Footer - Premium */}
       <footer
-        className="border-t"
+        className="border-t overflow-x-hidden"
         style={{
           backgroundColor: tokens.surface,
           borderColor: tokens.border,
         }}
       >
         {/* Carte Innosoft Portfolio — design exceptionnel */}
-        <div className="px-4 xs:px-6 sm:px-8 md:px-12 lg:px-20 py-6 sm:py-8 md:py-10">
+        <div className="px-3 xs:px-4 sm:px-6 md:px-12 lg:px-20 py-5 sm:py-6 md:py-8 lg:py-10">
           <div className="max-w-4xl mx-auto">
             <Link to="/" className="block no-underline">
               <motion.div
@@ -1522,12 +1524,12 @@ const PortfolioPremium = ({ data, slug, isPreview = false }) => {
                       alt="Innosoft Portfolio"
                       decoding="async"
                       loading="lazy"
-                      className="h-12 sm:h-14 md:h-16 w-auto object-contain opacity-95 group-hover:opacity-100 transition-opacity"
+                      className="h-10 xs:h-12 sm:h-14 md:h-16 w-auto object-contain opacity-95 group-hover:opacity-100 transition-opacity"
                     />
                   </div>
                   {/* Texte + CTA */}
-                  <div className="flex-1 text-center sm:text-left min-w-0">
-                    <p className="text-sm sm:text-base md:text-lg font-semibold mb-2" style={{ color: tokens.text }}>
+                  <div className="flex-1 text-center sm:text-left min-w-0 w-full">
+                    <p className="text-sm xs:text-base sm:text-lg font-semibold mb-1.5 sm:mb-2 break-words" style={{ color: tokens.text }}>
                       Ce portfolio a été créé avec{' '}
                       <span
                         className="font-bold bg-clip-text"
@@ -1539,7 +1541,7 @@ const PortfolioPremium = ({ data, slug, isPreview = false }) => {
                         Innosoft Portfolio
                       </span>
                     </p>
-                    <p className="text-xs sm:text-sm md:text-base mb-4 sm:mb-6 max-w-xl" style={{ color: tokens.textMuted }}>
+                    <p className="text-xs xs:text-sm md:text-base mb-3 sm:mb-6 max-w-xl mx-auto sm:mx-0" style={{ color: tokens.textMuted }}>
                       Créez le vôtre en quelques clics, personnalisez votre design et partagez votre parcours avec le monde.
                     </p>
                     <motion.span
@@ -1567,11 +1569,11 @@ const PortfolioPremium = ({ data, slug, isPreview = false }) => {
         </div>
 
         {/* Bas de pied de page */}
-        <div className="py-6 sm:py-8 px-4 xs:px-6 sm:px-8 md:px-12 lg:px-20">
+        <div className="py-5 sm:py-6 md:py-8 px-3 xs:px-4 sm:px-6 md:px-12 lg:px-20">
           <div className="max-w-7xl mx-auto">
-            <div className="flex flex-col md:flex-row justify-between items-center gap-4 sm:gap-6">
-              <div className="text-center md:text-left">
-                <div className="text-lg sm:text-xl font-bold mb-1" style={{ color: tokens.text }}>
+            <div className="flex flex-col md:flex-row justify-between items-center gap-3 sm:gap-4 md:gap-6 text-center md:text-left">
+              <div>
+                <div className="text-base xs:text-lg sm:text-xl font-bold mb-0.5 sm:mb-1" style={{ color: tokens.text }}>
                   {display_name}
                   <span className="text-[var(--primary)]">.</span>
                 </div>
@@ -1580,13 +1582,13 @@ const PortfolioPremium = ({ data, slug, isPreview = false }) => {
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 md:gap-6">
+              <div className="flex flex-wrap items-center justify-center gap-2 xs:gap-3 sm:gap-4 md:gap-6">
                 {navItems.slice(1).map((item) => (
                   <a
                     key={item.href}
                     href={item.href}
                     onClick={(e) => scrollTo(e, item.href)}
-                    className="text-xs sm:text-sm font-medium transition-all duration-300 hover:opacity-70 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 rounded-lg px-2 py-1"
+                    className="text-xs sm:text-sm font-medium transition-all duration-300 hover:opacity-70 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 rounded-lg px-2 py-1 whitespace-nowrap"
                     style={{ color: tokens.textMuted }}
                   >
                     {item.name}

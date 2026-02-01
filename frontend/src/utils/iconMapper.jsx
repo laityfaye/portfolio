@@ -7,7 +7,7 @@ import {
 import {
   SiTypescript, SiMongodb, SiPostgresql, SiTailwindcss, SiNextdotjs,
   SiExpress, SiRedux, SiGraphql, SiFirebase, SiMysql, SiLaravel,
-  SiDjango, SiFlutter, SiKotlin, SiRust, SiGo
+  SiDjango, SiFlutter, SiKotlin, SiRust, SiGo, SiSwift, SiIonic, SiDart
 } from 'react-icons/si';
 
 const iconMap = {
@@ -48,7 +48,10 @@ const iconMap = {
   // Mobile
   SiFlutter,
   SiKotlin,
-  FaSwift,
+  SiSwift,
+  SiIonic,
+  SiDart,
+  FaSwift, // rétrocompatibilité
 
   // About highlights icons
   FaUser,
@@ -110,6 +113,12 @@ export const skillIcons = [
   { name: 'FaDocker', label: 'Docker' },
   { name: 'FaGitAlt', label: 'Git' },
   { name: 'FaAws', label: 'AWS' },
+  // Mobile
+  { name: 'SiFlutter', label: 'Flutter' },
+  { name: 'SiKotlin', label: 'Kotlin' },
+  { name: 'SiSwift', label: 'Swift' },
+  { name: 'SiIonic', label: 'Ionic' },
+  { name: 'SiDart', label: 'Dart' },
 ];
 
 export default iconMap;

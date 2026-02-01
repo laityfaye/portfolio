@@ -15,7 +15,7 @@ class StoreSkillRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:100',
-            'icon' => 'required|string|max:50',
+            'icon' => 'nullable|string|max:50',
             'level' => 'required|integer|min:0|max:100',
             'category' => 'required|string|max:50|regex:/^[a-z][a-z0-9_]*$/',
         ];
@@ -25,7 +25,6 @@ class StoreSkillRequest extends FormRequest
     {
         return [
             'name.required' => 'Le nom de la competence est requis',
-            'icon.required' => 'L\'icone est requise',
             'level.required' => 'Le niveau est requis',
             'level.min' => 'Le niveau doit etre entre 0 et 100',
             'level.max' => 'Le niveau doit etre entre 0 et 100',
