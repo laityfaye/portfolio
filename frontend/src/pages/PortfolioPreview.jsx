@@ -13,6 +13,8 @@ import Projects from '../components/Projects';
 import Contact from '../components/Contact';
 import Footer from '../components/Footer';
 import PortfolioMinimal from '../templates/PortfolioMinimal';
+import PortfolioElegant from '../templates/PortfolioElegant';
+import PortfolioLuxe from '../templates/PortfolioLuxe';
 
 const PortfolioPreviewContent = ({ data }) => {
   const { isDarkMode } = useTheme();
@@ -23,6 +25,12 @@ const PortfolioPreviewContent = ({ data }) => {
 
   if (template === 'minimal') {
     return <PortfolioMinimal data={data} slug="preview" isPreview={true} />;
+  }
+  if (template === 'elegant') {
+    return <PortfolioElegant data={data} slug="preview" isPreview={true} />;
+  }
+  if (template === 'luxe') {
+    return <PortfolioLuxe data={data} slug="preview" isPreview={true} />;
   }
 
   return (

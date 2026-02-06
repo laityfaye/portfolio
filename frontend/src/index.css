@@ -327,6 +327,11 @@
   }
 }
 
+/* Safe area for mobile modals (notched devices) */
+.pb-safe {
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
+}
+
 /* Thin scrollbar for sidebars */
 .scrollbar-thin::-webkit-scrollbar {
   width: 4px;

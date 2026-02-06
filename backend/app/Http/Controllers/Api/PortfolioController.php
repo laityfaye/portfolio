@@ -8,7 +8,7 @@ use App\Http\Resources\PortfolioResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 class PortfolioController extends Controller
 {
@@ -78,11 +78,11 @@ class PortfolioController extends Controller
         return response()->json([
             'data' => new PortfolioResource($portfolio->fresh()),
             'message' => 'Photo de profil mise a jour',
-            'image_url' => Storage::disk('public')->url($path),
+            'image_url' => asset('storage/' . $path),
         ]);
     }
 
-    public function downloadCv(Request $request): StreamedResponse|JsonResponse
+    public function downloadCv(Request $request): Response|JsonResponse
     {
         $portfolio = $request->user()->portfolio;
 
@@ -90,18 +90,16 @@ class PortfolioController extends Controller
             return response()->json(['message' => 'CV non trouvé'], 404);
         }
 
-        $response = Storage::disk('public')->response(
-            $portfolio->cv_file,
-            'cv.pdf',
+        return response()->file(
+            storage_path('app/public/' . $portfolio->cv_file),
             [
                 'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'inline; filename="cv.pdf"',
                 'Access-Control-Allow-Origin' => '*',
                 'Access-Control-Allow-Methods' => 'GET, OPTIONS',
                 'Access-Control-Allow-Headers' => 'Content-Type, Authorization',
             ]
         );
-
-        return $response;
     }
 
     public function uploadCv(Request $request): JsonResponse
@@ -124,7 +122,7 @@ class PortfolioController extends Controller
         return response()->json([
             'data' => new PortfolioResource($portfolio->fresh()),
             'message' => 'CV mis a jour',
-            'cv_url' => Storage::disk('public')->url($path),
+            'cv_url' => asset('storage/' . $path),
         ]);
     }
 
@@ -133,7 +131,7 @@ class PortfolioController extends Controller
         $request->validate([
             'theme_color' => 'required|in:cyan,purple,green,orange,pink,blue,red,yellow,indigo,teal,amber,rose,emerald',
             'theme_mode' => 'required|in:light,dark',
-            'template' => 'sometimes|in:classic,minimal',
+            'template' => 'sometimes|in:classic,minimal,elegant,luxe',
         ]);
 
         $portfolio = $request->user()->portfolio;

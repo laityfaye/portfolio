@@ -3,11 +3,19 @@ import { Link } from 'react-router-dom';
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform, useInView } from 'framer-motion';
 import {
   FaRocket, FaPalette, FaGlobe, FaTimes, FaEye, FaArrowRight,
-  FaCheck, FaStar, FaUsers, FaCode, FaSun, FaMoon
+  FaCheck, FaStar, FaUsers, FaCode, FaSun, FaMoon, FaSync, FaExternalLinkAlt, FaChevronDown, FaChevronUp,
+  FaLayerGroup
 } from 'react-icons/fa';
-import { useTheme } from '../context/ThemeContext';
+import { useTheme, themes } from '../context/ThemeContext';
 import { getPublicImageUrl } from '../utils/imageUtils';
 import { useAuth } from '../context/AuthContext';
+
+const TEMPLATES = [
+  { id: 'classic', name: 'Classic', accent: '#3b82f6' },
+  { id: 'minimal', name: 'Minimal', accent: '#8b5cf6' },
+  { id: 'elegant', name: 'Elegant', accent: '#d97706' },
+  { id: 'luxe', name: 'Luxe', accent: '#ec4899' },
+];
 
 // Composant Counter animé - se décompte au chargement et au survol
 const AnimatedCounter = ({ value, suffix = '', className, replayTrigger = 0 }) => {
@@ -51,6 +59,12 @@ const Home = () => {
   const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [statHoverKeys, setStatHoverKeys] = useState([0, 0, 0]);
+  const [previewTemplate, setPreviewTemplate] = useState('classic');
+  const [previewColor, setPreviewColor] = useState('cyan');
+  const [previewMode, setPreviewMode] = useState('dark');
+  const [iframeKey, setIframeKey] = useState(0);
+  const [iframeLoaded, setIframeLoaded] = useState(false);
+  const [showControls, setShowControls] = useState(true);
   
   const heroImageUrl = 'https://images.unsplash.com/photo-1551650975-87deedd944c3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1974&q=80';
 
@@ -68,19 +82,24 @@ const Home = () => {
 
   const features = [
     {
+      icon: <FaLayerGroup />,
+      title: 'Plus de 5 modèles',
+      description: 'Classic, Minimal, Elegant, Luxe... Choisissez le design qui vous ressemble parmi nos modèles professionnels. Chaque template est entièrement personnalisable pour un portfolio unique qui vous démarque.',
+    },
+    {
       icon: <FaPalette />,
-      title: '13 Themes',
-      description: 'Choisissez parmi 13 themes de couleur et modes clair/sombre',
+      title: '13 thèmes',
+      description: 'Choisissez parmi 13 thèmes de couleur et modes clair/sombre pour adapter votre portfolio à votre image de marque.',
     },
     {
       icon: <FaRocket />,
-      title: 'Design Moderne',
-      description: 'Animations fluides et design glassmorphism professionnel',
+      title: 'Design moderne',
+      description: 'Animations fluides et design glassmorphism professionnel qui impressionnent les recruteurs et clients.',
     },
     {
       icon: <FaGlobe />,
-      title: 'URL Unique',
-      description: 'Obtenez votre URL personnalisee innosoft.com/p/votre-nom',
+      title: 'URL unique',
+      description: 'Obtenez votre URL personnalisée innosoft.com/p/votre-nom pour partager facilement votre portfolio.',
     },
   ];
 
@@ -92,26 +111,43 @@ const Home = () => {
   ];
 
   const stats = [
-    { value: 500, suffix: '+', label: 'Portfolios crees', icon: <FaUsers /> },
-    { value: 13, suffix: '', label: 'Themes disponibles', icon: <FaPalette /> },
-    { value: 100, suffix: '%', label: 'Personnalisable', icon: <FaCode /> },
+    { value: 500, suffix: '+', label: 'Portfolios crees', labelShort: 'Portfolios', icon: <FaUsers /> },
+    { value: 13, suffix: '', label: 'Themes disponibles', labelShort: 'Themes', icon: <FaPalette /> },
+    { value: 100, suffix: '%', label: 'Personnalisable', labelShort: 'Perso', icon: <FaCode /> },
   ];
 
-  const themeColors = [
-    { name: 'Cyan', color: '#06b6d4' },
-    { name: 'Blue', color: '#3b82f6' },
-    { name: 'Purple', color: '#8b5cf6' },
-    { name: 'Pink', color: '#ec4899' },
-    { name: 'Rose', color: '#f43f5e' },
-    { name: 'Orange', color: '#f97316' },
-    { name: 'Amber', color: '#f59e0b' },
-    { name: 'Yellow', color: '#eab308' },
-    { name: 'Lime', color: '#84cc16' },
-    { name: 'Green', color: '#22c55e' },
-    { name: 'Emerald', color: '#10b981' },
-    { name: 'Teal', color: '#14b8a6' },
-    { name: 'Indigo', color: '#6366f1' },
-  ];
+  const demoBaseUrl = typeof window !== 'undefined' ? `${window.location.origin}/p/demo` : '/p/demo';
+  const previewUrl = `${demoBaseUrl}?preview=1&template=${previewTemplate}&color=${previewColor}&mode=${previewMode}&t=${iframeKey}`;
+
+  const refreshPreview = () => setIframeKey((k) => k + 1);
+
+  const handlePreviewTemplateChange = (tpl) => {
+    setPreviewTemplate(tpl);
+    refreshPreview();
+  };
+  const handlePreviewColorChange = (color) => {
+    setPreviewColor(color);
+    refreshPreview();
+  };
+  const handlePreviewModeChange = (mode) => {
+    setPreviewMode(mode);
+    refreshPreview();
+  };
+
+  // Escape pour fermer le modal
+  useEffect(() => {
+    if (!showTemplateModal) return;
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') setShowTemplateModal(false);
+    };
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [showTemplateModal]);
+
+  // Reset iframe loaded quand le modal s'ouvre ou l'URL change
+  useEffect(() => {
+    if (showTemplateModal) setIframeLoaded(false);
+  }, [showTemplateModal, previewUrl]);
 
   return (
     <div className={`min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-gray-950' : 'bg-white'}`}>
@@ -280,49 +316,54 @@ const Home = () => {
             transition={{ delay: 0.3 }}
             className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mb-10 sm:mb-16 px-4"
           >
-            <button
+            <motion.button
               onClick={() => setShowTemplateModal(true)}
-              className="group px-4 sm:px-8 py-2.5 sm:py-4 bg-gradient-to-r from-red-500 to-red-600 text-white text-sm sm:text-lg font-semibold rounded-xl sm:rounded-2xl shadow-xl shadow-red-500/30 hover:shadow-2xl hover:shadow-red-500/40 transition-all hover:-translate-y-1 flex items-center justify-center gap-2 sm:gap-3 w-full sm:w-auto"
+              className="group px-5 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-red-500 to-red-600 text-white text-sm sm:text-lg font-semibold rounded-xl sm:rounded-2xl shadow-xl shadow-red-500/30 hover:shadow-2xl hover:shadow-red-500/40 flex items-center justify-center gap-2 sm:gap-3 w-full sm:w-auto"
+              whileHover={{ scale: 1.02, y: -2 }}
+              whileTap={{ scale: 0.98 }}
             >
               <FaEye className="group-hover:scale-110 transition-transform text-sm sm:text-base" />
               Voir le template
-            </button>
-            <Link
-              to="/register"
-              className="px-4 sm:px-8 py-2.5 sm:py-4 text-sm sm:text-lg font-semibold rounded-xl sm:rounded-2xl border-2 transition-all flex items-center justify-center gap-2 sm:gap-3 w-full sm:w-auto bg-gray-900 text-white border-gray-700 hover:border-red-500/50 hover:bg-gray-800"
-            >
-              Commencer gratuitement
-              <FaArrowRight className="text-red-500 text-sm sm:text-base" />
-            </Link>
+            </motion.button>
+            <motion.div whileHover={{ scale: 1.02, y: -2 }} whileTap={{ scale: 0.98 }}>
+              <Link
+                to="/register"
+                className="block px-5 sm:px-8 py-3 sm:py-4 text-sm sm:text-lg font-semibold rounded-xl sm:rounded-2xl border-2 transition-all flex items-center justify-center gap-2 sm:gap-3 w-full sm:w-auto bg-white/10 backdrop-blur-sm text-white border-white/20 hover:border-red-400/50 hover:bg-white/15"
+              >
+                Commencer gratuitement
+                <FaArrowRight className="text-red-400 text-sm sm:text-base" />
+              </Link>
+            </motion.div>
           </motion.div>
 
-          {/* Stats */}
+          {/* Stats - adapté mobile */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="grid grid-cols-3 gap-3 sm:gap-6 max-w-2xl mx-auto px-4"
+            className="grid grid-cols-3 gap-2 xs:gap-3 sm:gap-6 max-w-2xl mx-auto px-2 xs:px-4"
           >
             {stats.map((stat, index) => (
               <motion.div
                 key={index}
-                className="text-center cursor-default select-none"
+                className="text-center cursor-default select-none p-2.5 xs:p-3 sm:p-5 rounded-xl sm:rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 hover:border-red-500/20 transition-all duration-300 min-w-0"
                 onMouseEnter={() => setStatHoverKeys(prev => {
                   const next = [...prev];
                   next[index]++;
                   return next;
                 })}
-                whileHover={{ scale: 1.05 }}
+                whileHover={{ scale: 1.03, y: -2 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 25 }}
               >
-                <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-xl mb-2 sm:mb-3 text-red-500 bg-red-500/10">
-                  <span className="text-sm sm:text-base">{stat.icon}</span>
+                <div className="inline-flex items-center justify-center w-7 h-7 xs:w-8 xs:h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl mb-1 xs:mb-2 sm:mb-3 text-red-400 bg-red-500/20 border border-red-500/20">
+                  <span className="text-xs xs:text-sm sm:text-base">{stat.icon}</span>
                 </div>
-                <div className="text-xl sm:text-3xl font-black text-white">
+                <div className="text-base xs:text-lg sm:text-3xl font-black text-white leading-tight">
                   <AnimatedCounter value={stat.value} suffix={stat.suffix} replayTrigger={statHoverKeys[index]} />
                 </div>
-                <div className="text-xs sm:text-sm font-semibold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
-                  {stat.label}
+                <div className="text-[10px] xs:text-[11px] sm:text-sm font-semibold text-white/90 leading-tight break-words">
+                  <span className="hidden xs:inline">{stat.label}</span>
+                  <span className="xs:hidden">{stat.labelShort}</span>
                 </div>
               </motion.div>
             ))}
@@ -335,45 +376,51 @@ const Home = () => {
         isDarkMode ? 'bg-gray-900/50' : 'bg-gray-50'
       }`}>
         <div className="container mx-auto">
-          <div className="text-center mb-10 sm:mb-16">
-            <span className={`inline-block px-3 sm:px-4 py-1 sm:py-1.5 font-semibold text-xs sm:text-sm rounded-full mb-3 sm:mb-4 ${
-              isDarkMode ? 'bg-red-500/10 text-red-400' : 'bg-red-100 text-red-600'
+          <div className="text-center mb-12 sm:mb-16">
+            <span className={`inline-block px-4 py-2 font-semibold text-xs sm:text-sm rounded-full mb-4 ${
+              isDarkMode ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-red-50 text-red-600 border border-red-100'
             }`}>
-              Fonctionnalites
+              Fonctionnalités
             </span>
-            <h2 className={`text-2xl sm:text-3xl md:text-5xl font-bold mb-3 sm:mb-4 px-4 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+            <h2 className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 px-4 tracking-tight ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
               Pourquoi choisir{' '}
               <span className="bg-gradient-to-r from-red-500 to-red-600 bg-clip-text text-transparent">
                 InnoSoft
               </span> ?
             </h2>
-            <p className={`text-sm sm:text-base max-w-xl mx-auto px-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-              Tout ce dont vous avez besoin pour creer un portfolio professionnel qui impressionne
+            <p className={`text-sm sm:text-base max-w-xl mx-auto px-4 leading-relaxed ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+              Tout ce dont vous avez besoin pour créer un portfolio professionnel qui impressionne
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 lg:gap-6">
             {features.map((feature, index) => (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className={`p-6 sm:p-8 rounded-2xl sm:rounded-3xl border transition-all group ${
+                viewport={{ once: true, margin: '-50px' }}
+                transition={{ delay: index * 0.08, duration: 0.4 }}
+                whileHover={{ y: -4 }}
+                className={`relative p-6 sm:p-7 rounded-2xl border transition-all duration-300 group overflow-hidden ${
                   isDarkMode
-                    ? 'bg-gray-900 border-gray-800 hover:border-red-500/30 shadow-lg shadow-black/20'
-                    : 'bg-white shadow-lg shadow-gray-200/50 border-gray-100 hover:shadow-xl hover:shadow-red-100/50 hover:border-red-100'
+                    ? 'bg-gray-900/80 border-gray-800/80 hover:border-red-500/40 hover:shadow-xl hover:shadow-red-500/10'
+                    : 'bg-white border-gray-200/80 hover:border-red-200 hover:shadow-xl hover:shadow-red-500/5'
                 }`}
               >
-                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-red-500 to-red-600 rounded-xl sm:rounded-2xl flex items-center justify-center text-white text-xl sm:text-2xl mb-4 sm:mb-6 shadow-lg shadow-red-500/30 group-hover:scale-110 transition-transform">
-                  {feature.icon}
+                {/* Bande accent en haut */}
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 to-red-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <div className="relative">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center text-white text-xl mb-4 shadow-lg shadow-red-500/25 group-hover:shadow-red-500/40 group-hover:scale-105 transition-all duration-300">
+                    {feature.icon}
+                  </div>
+                  <h3 className={`text-base sm:text-lg font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+                    {feature.title}
+                  </h3>
+                  <p className={`text-sm leading-relaxed ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                    {feature.description}
+                  </p>
                 </div>
-                <h3 className={`text-lg sm:text-xl font-bold mb-2 sm:mb-3 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
-                  {feature.title}
-                </h3>
-                <p className={`text-sm sm:text-base ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                  {feature.description}
-                </p>
               </motion.div>
             ))}
           </div>
@@ -383,44 +430,53 @@ const Home = () => {
       {/* How it works */}
       <section className={`py-12 sm:py-20 px-4 sm:px-6 transition-colors duration-300 ${isDarkMode ? 'bg-gray-950' : 'bg-white'}`}>
         <div className="container mx-auto">
-          <div className="text-center mb-10 sm:mb-16">
-            <span className={`inline-block px-3 sm:px-4 py-1 sm:py-1.5 font-semibold text-xs sm:text-sm rounded-full mb-3 sm:mb-4 ${
-              isDarkMode ? 'bg-red-500/10 text-red-400' : 'bg-red-100 text-red-600'
+          <div className="text-center mb-12 sm:mb-16">
+            <span className={`inline-block px-4 py-2 font-semibold text-xs sm:text-sm rounded-full mb-4 ${
+              isDarkMode ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-red-50 text-red-600 border border-red-100'
             }`}>
               Simple et rapide
             </span>
-            <h2 className={`text-2xl sm:text-3xl md:text-5xl font-bold mb-3 sm:mb-4 px-4 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
-              Comment ca{' '}
+            <h2 className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 px-4 tracking-tight ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+              Comment ça{' '}
               <span className="bg-gradient-to-r from-red-500 to-red-600 bg-clip-text text-transparent">
                 marche
               </span> ?
             </h2>
           </div>
 
-          <div className="max-w-3xl mx-auto px-4">
+          <div className="max-w-3xl mx-auto px-4 relative">
+            {/* Ligne de connexion verticale */}
+            <div className={`absolute left-5 sm:left-6 top-6 bottom-6 w-0.5 hidden sm:block ${isDarkMode ? 'bg-gradient-to-b from-red-500/50 via-red-500/30 to-transparent' : 'bg-gradient-to-b from-red-400/40 via-red-400/20 to-transparent'}`} />
             {steps.map((item, index) => (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, x: -20 }}
+                initial={{ opacity: 0, x: -24 }}
                 whileInView={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className="flex items-start gap-3 sm:gap-6 mb-6 sm:mb-8 last:mb-0"
+                viewport={{ once: true, margin: '-40px' }}
+                transition={{ delay: index * 0.1, type: 'spring', stiffness: 100 }}
+                className="relative flex items-start gap-4 sm:gap-6 mb-6 sm:mb-8 last:mb-0 group"
               >
-                <div className="flex-shrink-0">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl sm:rounded-2xl flex items-center justify-center text-white font-bold text-base sm:text-lg shadow-lg shadow-red-500/30">
+                <div className="flex-shrink-0 relative z-10">
+                  <motion.div
+                    whileHover={{ scale: 1.08 }}
+                    className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center text-white font-bold text-base sm:text-lg shadow-lg shadow-red-500/30 ring-4 ring-transparent group-hover:ring-red-500/20 transition-all"
+                  >
                     {index + 1}
-                  </div>
+                  </motion.div>
                 </div>
-                <div className={`flex-1 rounded-xl sm:rounded-2xl p-4 sm:p-6 border ${
-                  isDarkMode
-                    ? 'bg-gray-900 border-gray-800'
-                    : 'bg-gray-50 border-gray-100'
-                }`}>
-                  <h3 className={`text-base sm:text-lg font-bold mb-1 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+                <motion.div
+                  whileHover={{ x: 4 }}
+                  className={`flex-1 rounded-xl p-4 sm:p-5 border transition-all duration-300 ${
+                    isDarkMode
+                      ? 'bg-gray-900/80 border-gray-800 hover:border-red-500/30'
+                      : 'bg-gray-50/80 border-gray-200 hover:border-red-200'
+                  }`}
+                >
+                  <h3 className={`text-base sm:text-lg font-bold mb-1.5 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
                     {item.step}
                   </h3>
-                  <p className={`text-sm sm:text-base ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{item.desc}</p>
-                </div>
+                  <p className={`text-sm sm:text-base leading-relaxed ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{item.desc}</p>
+                </motion.div>
               </motion.div>
             ))}
           </div>
@@ -679,146 +735,276 @@ const Home = () => {
         </div>
       </footer>
 
-      {/* Template Preview Modal */}
+      {/* Template Preview Modal - Design amélioré */}
       <AnimatePresence>
         {showTemplateModal && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-1 sm:p-2 bg-gradient-to-br from-gray-900/95 via-black/95 to-gray-900/95 backdrop-blur-md"
-            onClick={() => setShowTemplateModal(false)}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4"
           >
+            {/* Backdrop */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+              onClick={() => setShowTemplateModal(false)}
+            />
+
+            {/* Modal - Plein écran mobile, centré desktop */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96, y: 8 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className={`relative w-full max-w-7xl max-h-[98vh] sm:max-h-[95vh] overflow-hidden rounded-2xl sm:rounded-3xl shadow-2xl ${
-                isDarkMode ? 'bg-gray-900' : 'bg-white'
+              exit={{ opacity: 0, scale: 0.96, y: 8 }}
+              transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+              className={`relative w-full h-full sm:h-[95vh] sm:max-h-[98vh] sm:max-w-6xl sm:rounded-2xl overflow-hidden flex flex-col shadow-2xl ring-1 ${
+                isDarkMode ? 'bg-gray-900 ring-gray-700/50' : 'bg-white ring-gray-200/50'
               }`}
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Modal Header */}
-              <div className="relative overflow-hidden">
-                {/* Red gradient accent bar */}
-                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 via-red-400 to-red-600" />
-
-                <div className={`flex items-center justify-between p-4 sm:p-5 md:p-6 ${isDarkMode ? 'bg-gray-900' : 'bg-white'}`}>
-                  <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
-                    {/* Icon */}
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg shadow-red-500/30 flex-shrink-0">
-                      <FaEye className="text-white text-lg sm:text-xl" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <h2 className={`text-lg sm:text-xl md:text-2xl font-bold truncate ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
-                        Apercu du{' '}
-                        <span className="bg-gradient-to-r from-red-500 to-red-600 bg-clip-text text-transparent">
-                          Template
-                        </span>
-                      </h2>
-                      <p className={`text-xs sm:text-sm mt-0.5 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                        Defilez pour explorer toutes les sections
-                      </p>
+              {/* Header - adapté mobile */}
+              <div className={`flex-shrink-0 flex items-center justify-between gap-2 px-3 py-2.5 sm:px-5 sm:py-3.5 border-b min-h-[52px] sm:min-h-0 ${
+                isDarkMode ? 'bg-gray-900/95 border-gray-800' : 'bg-white/95 border-gray-100'
+              } backdrop-blur-sm`}>
+                <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 overflow-hidden">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center shadow-lg shadow-red-500/25 flex-shrink-0">
+                    <FaEye className="text-white text-sm sm:text-lg" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h2 className={`text-sm sm:text-lg font-bold truncate ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+                      Aperçu
+                    </h2>
+                    <div className="flex items-center gap-1.5 mt-0.5 flex-wrap overflow-hidden">
+                      <span
+                        className="px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-medium truncate max-w-[60px] sm:max-w-none"
+                        style={{ backgroundColor: TEMPLATES.find((t) => t.id === previewTemplate)?.accent + '25', color: TEMPLATES.find((t) => t.id === previewTemplate)?.accent }}
+                      >
+                        {TEMPLATES.find((t) => t.id === previewTemplate)?.name || 'Classic'}
+                      </span>
+                      <span className={`text-[10px] sm:text-xs hidden xs:inline ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>•</span>
+                      <span className={`text-[10px] sm:text-xs truncate ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                        {themes[previewColor]?.name} • {previewMode === 'dark' ? 'Sombre' : 'Clair'}
+                      </span>
                     </div>
                   </div>
-                  <button
-                    onClick={() => setShowTemplateModal(false)}
-                    className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl transition-all flex items-center justify-center flex-shrink-0 ml-2 ${
-                      isDarkMode
-                        ? 'bg-gray-800 text-gray-400 hover:bg-red-500/20 hover:text-red-400'
-                        : 'bg-gray-100 hover:bg-red-50 text-gray-500 hover:text-red-500'
+                </div>
+
+                {/* Actions - touch targets 44px min sur mobile */}
+                <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+                  <motion.button
+                    type="button"
+                    onClick={() => setShowControls((c) => !c)}
+                    className={`flex items-center gap-1.5 sm:gap-2 px-2.5 py-2 sm:px-3 sm:py-2 rounded-lg text-xs font-medium transition-all min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0 justify-center ${
+                      showControls
+                        ? 'bg-red-500/20 text-red-500'
+                        : isDarkMode
+                          ? 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                     }`}
+                    whileTap={{ scale: 0.98 }}
                   >
-                    <FaTimes className="text-base sm:text-lg" />
-                  </button>
+                    <FaPalette className="text-sm" />
+                    {showControls ? <FaChevronUp className="text-xs hidden sm:inline" /> : <FaChevronDown className="text-xs hidden sm:inline" />}
+                  </motion.button>
+                  <motion.button
+                    type="button"
+                    onClick={refreshPreview}
+                    className={`p-2 sm:p-2.5 rounded-lg transition-all min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0 flex items-center justify-center ${
+                      isDarkMode ? 'bg-gray-800 text-gray-400 hover:bg-gray-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                    whileTap={{ scale: 0.95 }}
+                    title="Rafraîchir"
+                  >
+                    <FaSync className="text-sm" />
+                  </motion.button>
+                  <motion.a
+                    href={previewUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`p-2 sm:p-2.5 rounded-lg transition-all min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0 flex items-center justify-center ${
+                      isDarkMode ? 'bg-gray-800 text-gray-400 hover:bg-gray-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                    whileTap={{ scale: 0.95 }}
+                    title="Ouvrir dans un nouvel onglet"
+                  >
+                    <FaExternalLinkAlt className="text-sm" />
+                  </motion.a>
+                  <motion.button
+                    type="button"
+                    onClick={() => setShowTemplateModal(false)}
+                    className={`p-2 sm:p-2.5 rounded-lg transition-all min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0 flex items-center justify-center ${
+                      isDarkMode ? 'bg-gray-800 text-gray-400 hover:bg-red-500/20 hover:text-red-400' : 'bg-gray-100 text-gray-600 hover:bg-red-50 hover:text-red-500'
+                    }`}
+                    whileTap={{ scale: 0.95 }}
+                    title="Fermer (Échap)"
+                  >
+                    <FaTimes className="text-sm" />
+                  </motion.button>
                 </div>
               </div>
 
-              {/* Full Portfolio Preview - Scrollable */}
-              <div className={`overflow-y-auto max-h-[calc(98vh-180px)] sm:max-h-[calc(95vh-200px)] scrollbar-thin ${isDarkMode ? 'bg-gray-800' : 'bg-gray-100'}`}>
-                {/* Browser mockup frame */}
-                <div className={`mx-2 sm:mx-4 my-2 sm:my-4 rounded-lg sm:rounded-xl overflow-hidden shadow-xl border ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                  {/* Browser bar */}
-                  <div className="bg-gray-800 px-2 sm:px-4 py-2 sm:py-3 flex items-center gap-2 sm:gap-3">
-                    <div className="flex gap-1.5 sm:gap-2">
-                      <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-red-500" />
-                      <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-yellow-500" />
-                      <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-green-500" />
+              {/* Panneau de personnalisation - collapsible */}
+              <AnimatePresence>
+                {showControls && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.25, ease: 'easeInOut' }}
+                    className="overflow-hidden"
+                  >
+                    <div className={`px-3 py-3 sm:px-4 border-b ${
+                      isDarkMode ? 'bg-gray-800/50 border-gray-800' : 'bg-gray-50 border-gray-100'
+                    }`}>
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+                        {/* Modèle */}
+                        <div className="flex-shrink-0">
+                          <label className={`block text-[11px] font-semibold mb-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Modèle</label>
+                          <div className="flex flex-wrap gap-1.5">
+                            {TEMPLATES.map((tpl) => (
+                              <motion.button
+                                key={tpl.id}
+                                type="button"
+                                onClick={() => handlePreviewTemplateChange(tpl.id)}
+                                className={`px-2.5 py-1.5 rounded-md text-[11px] font-medium transition-all ${
+                                  previewTemplate === tpl.id ? 'text-white shadow' : isDarkMode ? 'bg-gray-700/80 text-gray-400 hover:bg-gray-600' : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                                }`}
+                                style={previewTemplate === tpl.id ? { backgroundColor: tpl.accent } : undefined}
+                                whileTap={{ scale: 0.97 }}
+                              >
+                                {tpl.name}
+                              </motion.button>
+                            ))}
+                          </div>
+                        </div>
+                        {/* Mode */}
+                        <div className="flex-shrink-0">
+                          <label className={`block text-[11px] font-semibold mb-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Mode</label>
+                          <div className="flex gap-1.5">
+                            <motion.button
+                              type="button"
+                              onClick={() => handlePreviewModeChange('light')}
+                              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[11px] font-medium transition-all ${
+                                previewMode === 'light' ? 'bg-amber-500 text-white shadow' : isDarkMode ? 'bg-gray-700/80 text-gray-400 hover:bg-gray-600' : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                              }`}
+                              whileTap={{ scale: 0.97 }}
+                            >
+                              <FaSun className="text-[10px]" /> Clair
+                            </motion.button>
+                            <motion.button
+                              type="button"
+                              onClick={() => handlePreviewModeChange('dark')}
+                              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[11px] font-medium transition-all ${
+                                previewMode === 'dark' ? 'bg-indigo-600 text-white shadow' : isDarkMode ? 'bg-gray-700/80 text-gray-400 hover:bg-gray-600' : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                              }`}
+                              whileTap={{ scale: 0.97 }}
+                            >
+                              <FaMoon className="text-[10px]" /> Sombre
+                            </motion.button>
+                          </div>
+                        </div>
+                        {/* Couleurs */}
+                        <div className="flex-1 min-w-0">
+                          <label className={`flex items-center gap-1.5 text-[11px] font-semibold mb-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                            <FaPalette className="text-red-500 opacity-80 text-[10px]" />
+                            <span>{themes[previewColor]?.name || previewColor}</span>
+                          </label>
+                          <div className="flex flex-wrap gap-1">
+                            {Object.entries(themes).map(([name, themeColors]) => {
+                              const isSelected = previewColor === name;
+                              return (
+                                <motion.button
+                                  key={name}
+                                  type="button"
+                                  onClick={() => handlePreviewColorChange(name)}
+                                  className={`relative w-6 h-6 sm:w-7 sm:h-7 rounded-md transition-all flex-shrink-0 ${
+                                    isSelected ? 'ring-2 ring-offset-0.5' : ''
+                                  }`}
+                                  style={{
+                                    backgroundColor: themeColors.primary.main,
+                                    boxShadow: isSelected ? `0 0 8px ${themeColors.primary.main}50` : undefined,
+                                    ringColor: themeColors.primary.main,
+                                    ringOffsetColor: isDarkMode ? '#1f2937' : '#f9fafb',
+                                  }}
+                                  whileTap={{ scale: 0.9 }}
+                                  title={themeColors.name}
+                                >
+                                  {isSelected && (
+                                    <motion.div
+                                      initial={{ scale: 0 }}
+                                      animate={{ scale: 1 }}
+                                      className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-md"
+                                    >
+                                      <FaCheck className="text-white text-[8px] sm:text-[9px] drop-shadow" />
+                                    </motion.div>
+                                  )}
+                                </motion.button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex-1 bg-gray-700 rounded-lg px-2 sm:px-4 py-1 sm:py-1.5 text-gray-400 text-xs sm:text-sm flex items-center gap-1 sm:gap-2 min-w-0">
-                      <FaGlobe className="text-xs flex-shrink-0" />
-                      <span className="truncate">innosft.com/p/laity-faye</span>
-                    </div>
-                  </div>
-                  {/* Portfolio Laity Faye en aperçu */}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Zone iframe - adapté mobile */}
+              <div className="relative flex-1 min-h-0 bg-gray-800/30 overflow-hidden">
+                <div className="absolute inset-1 sm:inset-2 md:inset-4 rounded-lg sm:rounded-xl overflow-hidden shadow-inner border border-gray-700/50 bg-gray-900">
                   <iframe
-                    src="https://innosft.com/p/laity-faye"
-                    title="Aperçu du portfolio Laity Faye"
-                    className="w-full h-[75vh] min-h-[500px] border-0"
+                    key={iframeKey}
+                    src={previewUrl}
+                    title="Aperçu du portfolio"
+                    className="w-full h-full min-h-[280px] sm:min-h-[400px] md:min-h-[550px] border-0"
+                    onLoad={() => setIframeLoaded(true)}
                   />
-                </div>
-
-                {/* Theme Colors */}
-                <div className={`mx-2 sm:mx-4 mb-2 sm:mb-4 p-4 sm:p-5 rounded-lg sm:rounded-xl border shadow-sm ${
-                  isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'
-                }`}>
-                  <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-                    <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-red-500 to-red-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <FaPalette className="text-white text-xs sm:text-sm" />
-                    </div>
-                    <div className="min-w-0">
-                      <h4 className={`text-xs sm:text-sm font-bold ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
-                        Personnalisez votre style
-                      </h4>
-                      <p className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
-                        13 themes + Mode clair/sombre
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {themeColors.map((c) => (
-                      <div
-                        key={c.name}
-                        className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl cursor-pointer transition-all hover:scale-110 hover:-translate-y-1 border-2 border-white/20"
-                        style={{ backgroundColor: c.color, boxShadow: `0 4px 12px ${c.color}50` }}
-                        title={c.name}
-                      />
-                    ))}
-                  </div>
+                  <AnimatePresence>
+                    {!iframeLoaded && (
+                      <motion.div
+                        initial={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-gray-900/95"
+                      >
+                        <div className="w-12 h-12 rounded-full border-2 border-red-500/30 border-t-red-500 animate-spin" />
+                        <p className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-500'}`}>
+                          Chargement de l'aperçu...
+                        </p>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               </div>
 
-              {/* Modal Footer */}
-              <div className={`flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 p-4 sm:p-5 md:p-6 border-t ${
-                isDarkMode
-                  ? 'border-gray-800 bg-gradient-to-r from-gray-900 to-gray-900'
-                  : 'border-gray-100 bg-gradient-to-r from-gray-50 to-white'
-              }`}>
-                <div className="flex items-center gap-3 sm:gap-4">
-                  <div className={`rounded-xl sm:rounded-2xl p-2 sm:p-3 ${isDarkMode ? 'bg-red-500/10' : 'bg-red-50'}`}>
-                    <p className="text-xl sm:text-2xl md:text-3xl font-black text-red-500">
-                      2500
-                    </p>
-                    <p className="text-xs font-medium text-red-400 -mt-0.5 sm:-mt-1">FCFA</p>
+              {/* Footer CTA - adapté mobile */}
+              <div className={`flex-shrink-0 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 sm:gap-3 px-3 py-2.5 sm:px-4 sm:py-3 border-t ${
+                isDarkMode ? 'bg-gray-900 border-gray-800' : 'bg-gray-50 border-gray-100'
+              } pb-safe`}>
+                <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 overflow-hidden">
+                  <div className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg flex-shrink-0 ${isDarkMode ? 'bg-red-500/15' : 'bg-red-50'}`}>
+                    <span className="text-lg sm:text-2xl font-black text-red-500">2500</span>
+                    <span className="text-[10px] sm:text-xs font-semibold text-red-500/80 ml-1">FCFA</span>
                   </div>
-                  <div>
-                    <p className={`text-xs sm:text-sm font-semibold ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
-                      Paiement unique
+                  <div className="min-w-0">
+                    <p className={`text-[11px] sm:text-xs font-semibold truncate ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+                      Paiement unique • Accès à vie
                     </p>
-                    <p className={`text-xs flex items-center gap-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                      <FaCheck className="text-green-500 flex-shrink-0" /> Acces a vie inclus
+                    <p className={`text-[10px] sm:text-[11px] flex items-center gap-1 mt-0.5 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                      <FaCheck className="text-green-500 text-[9px] flex-shrink-0" /> <span className="truncate">Créez en quelques minutes</span>
                     </p>
                   </div>
                 </div>
                 <Link
                   to="/register"
-                  className="group px-5 sm:px-6 py-2.5 sm:py-3.5 bg-gradient-to-r from-red-500 to-red-600 text-white text-sm sm:text-base font-semibold rounded-xl shadow-lg shadow-red-500/30 hover:shadow-xl hover:shadow-red-500/40 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 w-full sm:w-auto"
+                  className="group flex items-center justify-center gap-2 px-4 py-3 sm:px-5 sm:py-2.5 text-sm font-semibold bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg shadow-lg shadow-red-500/30 min-h-[44px]"
                   onClick={() => setShowTemplateModal(false)}
                 >
-                  <span className="hidden sm:inline">Creer mon portfolio</span>
-                  <span className="sm:hidden">Creer</span>
-                  <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
+                  Créer mon portfolio
+                  <FaArrowRight className="group-hover:translate-x-1 transition-transform text-xs" />
                 </Link>
               </div>
             </motion.div>

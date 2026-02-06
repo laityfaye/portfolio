@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaSave, FaSun, FaMoon, FaPalette, FaCheck, FaTimes, FaLayerGroup, FaAlignLeft, FaCog, FaExternalLinkAlt, FaSync, FaCreditCard, FaGlobe, FaSpinner } from 'react-icons/fa';
+import { FaSave, FaSun, FaMoon, FaPalette, FaCheck, FaTimes, FaLayerGroup, FaAlignLeft, FaCog, FaExternalLinkAlt, FaSync, FaCreditCard, FaGlobe, FaSpinner, FaGem, FaCrown } from 'react-icons/fa';
 import { useTheme, themes } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { portfolioApi } from '../../api/portfolio';
@@ -11,14 +11,30 @@ const TEMPLATES = [
   {
     id: 'classic',
     name: 'Classic',
-    description: 'Design dynamique avec hero immersif, orbes animés et sections colorées.',
+    description: 'Hero immersif, orbes animés et sections colorées.',
     icon: FaLayerGroup,
+    accent: '#3b82f6',
   },
   {
     id: 'minimal',
     name: 'Minimal',
-    description: 'Layout professionnel avec sidebar fixe et mise en page sobre.',
+    description: 'Layout professionnel, sidebar fixe, mise en page sobre.',
     icon: FaAlignLeft,
+    accent: '#8b5cf6',
+  },
+  {
+    id: 'elegant',
+    name: 'Elegant',
+    description: 'Typographie serif, grille bento, esthétique premium.',
+    icon: FaGem,
+    accent: '#d97706',
+  },
+  {
+    id: 'luxe',
+    name: 'Luxe',
+    description: 'Gradient mesh, typo Syne, design ultra-premium et moderne.',
+    icon: FaCrown,
+    accent: '#ec4899',
   },
 ];
 
@@ -608,10 +624,11 @@ const ThemeEditor = ({ portfolio, onUpdate }) => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {TEMPLATES.map((tpl) => {
             const Icon = tpl.icon;
             const isCurrent = portfolio?.template === tpl.id;
+            const accent = tpl.accent || '#ef4444';
             return (
               <motion.button
                 key={tpl.id}
@@ -622,43 +639,58 @@ const ThemeEditor = ({ portfolio, onUpdate }) => {
                 className={`relative text-left p-5 rounded-xl border-2 transition-all overflow-hidden group ${
                   isCurrent
                     ? isDarkMode
-                      ? 'border-red-500 bg-red-500/10'
-                      : 'border-red-500 bg-red-50'
+                      ? 'border-red-500 bg-red-500/10 shadow-lg shadow-red-500/20'
+                      : 'border-red-500 bg-red-50 shadow-lg shadow-red-500/10'
                     : isDarkMode
-                      ? 'border-gray-700 bg-gray-800/50 hover:border-red-500/50 hover:bg-red-500/5'
-                      : 'border-gray-200 bg-white hover:border-red-300 hover:bg-red-50/50'
+                      ? 'border-gray-700 bg-gray-800/50 hover:border-gray-600 hover:shadow-md'
+                      : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-md'
                 }`}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
+                {/* Bande accent en haut */}
+                <div
+                  className="absolute top-0 left-0 right-0 h-1"
+                  style={{ backgroundColor: accent }}
+                />
                 {isCurrent && (
-                  <div className="absolute top-3 right-3 px-2 py-0.5 rounded-full bg-red-500 text-white text-xs font-medium">
+                  <div className="absolute top-3 right-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-500 text-white text-xs font-medium">
+                    <span className="w-1.5 h-1.5 rounded-full bg-white/80 animate-pulse" />
                     Actuel
                   </div>
                 )}
                 <div
-                  className={`w-10 h-10 rounded-lg flex items-center justify-center mb-3 transition-colors ${
+                  className={`w-12 h-12 rounded-xl flex items-center justify-center mb-3 transition-all ${
                     isCurrent
-                      ? 'bg-red-500/20 text-red-500'
+                      ? ''
                       : isDarkMode
-                        ? 'bg-gray-700 text-gray-400 group-hover:bg-red-500/10 group-hover:text-red-400'
-                        : 'bg-gray-100 text-gray-600 group-hover:bg-red-100 group-hover:text-red-500'
+                        ? 'bg-gray-700 text-gray-400 group-hover:bg-gray-600'
+                        : 'bg-gray-100 text-gray-600 group-hover:bg-gray-200'
                   }`}
+                  style={isCurrent ? { backgroundColor: `${accent}25`, color: accent } : undefined}
                 >
-                  <Icon className="text-lg" />
+                  <Icon className="text-xl" />
                 </div>
                 <h3 className={`font-bold text-base mb-1 transition-colors ${
                   isCurrent
                     ? 'text-red-500'
                     : isDarkMode
-                      ? 'text-white group-hover:text-red-400'
-                      : 'text-gray-800 group-hover:text-red-600'
+                      ? 'text-white'
+                      : 'text-gray-800'
                 }`}>
                   {tpl.name}
                 </h3>
-                <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                <p className={`text-sm leading-relaxed ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                   {tpl.description}
                 </p>
+                {!isCurrent && (
+                  <span className={`mt-3 inline-flex items-center gap-1 text-xs font-medium ${
+                    isDarkMode ? 'text-gray-500 group-hover:text-gray-400' : 'text-gray-400 group-hover:text-gray-600'
+                  }`}>
+                    Cliquer pour prévisualiser
+                    <FaExternalLinkAlt className="text-[10px] opacity-60" />
+                  </span>
+                )}
               </motion.button>
             );
           })}
