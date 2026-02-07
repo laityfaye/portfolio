@@ -85,6 +85,7 @@ const PortfolioLuxe = ({ data, slug, isPreview = false }) => {
   const [contactErrors, setContactErrors] = useState({});
   const [contactSubmitting, setContactSubmitting] = useState(false);
   const [contactSuccess, setContactSuccess] = useState(null);
+  const [contactSubmitError, setContactSubmitError] = useState(null);
   const reducedMotion = useSyncExternalStore(
     (cb) => {
       const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -171,16 +172,22 @@ const PortfolioLuxe = ({ data, slug, isPreview = false }) => {
     const { name, value } = e.target;
     setContactForm((prev) => ({ ...prev, [name]: value }));
     setContactErrors((prev) => (prev[name] ? { ...prev, [name]: '' } : prev));
+    setContactSubmitError(null);
   }, []);
 
   const handleContactSubmit = useCallback(async (e) => {
     e.preventDefault();
     setContactSuccess(null);
+    setContactSubmitError(null);
     if (isPreview) {
       setContactSuccess('Aperçu: le formulaire fonctionne correctement!');
       return;
     }
-    if (!validateContactForm() || !slug) return;
+    if (!slug) {
+      setContactSubmitError("Impossible d'envoyer le message (slug manquant).");
+      return;
+    }
+    if (!validateContactForm()) return;
     setContactSubmitting(true);
     try {
       await portfolioApi.sendContact(slug, {
@@ -194,10 +201,11 @@ const PortfolioLuxe = ({ data, slug, isPreview = false }) => {
       setContactErrors({});
     } catch (err) {
       const msg = err.response?.data?.message || "Impossible d'envoyer le message.";
+      setContactSubmitError(msg);
       const raw = err.response?.data?.errors;
       const errors = raw
         ? Object.fromEntries(Object.entries(raw).map(([k, v]) => [k, Array.isArray(v) ? v[0] : v]))
-        : { message: msg };
+        : {};
       setContactErrors(errors);
       setContactSuccess(null);
     } finally {
@@ -875,17 +883,18 @@ const PortfolioLuxe = ({ data, slug, isPreview = false }) => {
                     />
                     {contactErrors.message && <p className="mt-1.5 text-xs" style={{ color: primary }}>{contactErrors.message}</p>}
                   </div>
+                  {contactSubmitError && <p className="text-sm font-medium py-2 px-3 rounded-lg" style={{ color: primary, backgroundColor: primary + '15', border: '1px solid ' + primary + '30' }}>{contactSubmitError}</p>}
                   {contactSuccess && <p className="text-sm font-medium" style={{ color: primary }}>✓ {contactSuccess}</p>}
                   <motion.button
                     type="submit"
                     disabled={contactSubmitting}
-                    className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold rounded-xl text-white transition-all"
+                    className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold rounded-xl text-white transition-all disabled:opacity-70"
                     style={{ background: 'linear-gradient(135deg, ' + primary + ', ' + accent + ')', boxShadow: '0 4px 20px -4px ' + primary + '50' }}
-                    whileHover={{ boxShadow: '0 8px 28px -6px ' + primary + '60' }}
-                    whileTap={{ scale: 0.98 }}
+                    whileHover={!contactSubmitting ? { boxShadow: '0 8px 28px -6px ' + primary + '60' } : {}}
+                    whileTap={!contactSubmitting ? { scale: 0.98 } : {}}
                   >
                     <FaPaperPlane className="text-xs" />
-                    Envoyer le message
+                    {contactSubmitting ? 'Envoi en cours...' : 'Envoyer le message'}
                   </motion.button>
                 </motion.form>
               )}

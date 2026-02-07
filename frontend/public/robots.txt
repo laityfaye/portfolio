@@ -1,0 +1,18 @@
+# InnoSoft Portfolio - robots.txt
+# https://innosft.com/p/
+
+User-agent: *
+Allow: /
+Allow: /p/
+Allow: /p/login
+Allow: /p/register
+Allow: /p/demo
+
+# Pages protégées (dashboard, admin) - optionnel de laisser crawler ou non
+Disallow: /p/dashboard/
+Disallow: /p/admin/
+Disallow: /p/preview
+
+# Sitemap dynamique (inclut tous les portfolios publiés)
+# Mettre à jour l'URL si l'API est sur un autre domaine
+Sitemap: https://apiportfolio.innosft.com/api/public/sitemap.xml

@@ -307,7 +307,7 @@ const Home = () => {
           >
             <span className="text-red-400 font-semibold drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">Design moderne • Animations fluides • 100% personnalisable</span>
             <br />
-            <span className="text-lg sm:text-xl">Créez un portfolio qui impressionne en moins de 5 minutes. Pas besoin de coder, juste votre créativité.</span>
+            <span className="text-lg sm:text-xl">Créez votre portfolio en ligne qui impressionne en moins de 5 minutes. Pas besoin de coder, juste votre créativité.</span>
           </motion.p>
 
           <motion.div

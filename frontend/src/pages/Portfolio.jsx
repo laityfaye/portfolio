@@ -16,6 +16,7 @@ import Footer from '../components/Footer';
 import PortfolioMinimal from '../templates/PortfolioMinimal';
 import PortfolioElegant from '../templates/PortfolioElegant';
 import PortfolioLuxe from '../templates/PortfolioLuxe';
+import PortfolioSEO from '../components/PortfolioSEO';
 
 const PortfolioContent = ({ data, slug }) => {
   const { isDarkMode } = useTheme();
@@ -139,6 +140,7 @@ const Portfolio = () => {
       initialMode={initialMode}
       disableLocalStorage={true}
     >
+      <PortfolioSEO data={displayData} slug={slug} />
       <PortfolioContent data={displayData} slug={slug} />
     </ThemeProvider>
   );

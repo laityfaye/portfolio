@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\PortfolioController;
 use App\Http\Controllers\Api\ProjectController;
 use App\Http\Controllers\Api\PublicPortfolioController;
+use App\Http\Controllers\Api\SitemapController;
 use App\Http\Controllers\Api\SkillController;
 use App\Http\Controllers\Api\Admin\AdminAuthController;
 use App\Http\Controllers\Api\Admin\AdminDashboardController;
@@ -18,6 +19,7 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('public')->group(function () {
     Route::get('/portfolio/{slug}', [PublicPortfolioController::class, 'show']);
     Route::post('/portfolio/{slug}/contact', [PublicPortfolioController::class, 'contact']);
+    Route::get('/sitemap.xml', [SitemapController::class, 'index']);
 });
 
 // Authentication routes

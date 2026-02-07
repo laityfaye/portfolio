@@ -54,6 +54,15 @@ return [
 
     'url' => env('APP_URL', 'http://localhost'),
 
+    'frontend_url' => env('FRONTEND_URL', env('APP_URL')),
+
+    /*
+    | IndexNow - clé pour l'indexation instantanée (Bing, Yandex).
+    | Générer une clé : https://www.indexnow.org/
+    */
+    'indexnow_key' => env('INDEXNOW_KEY'),
+    'indexnow_key_location' => env('INDEXNOW_KEY_LOCATION'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone

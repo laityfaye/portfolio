@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\PortfolioResource;
 use App\Models\Portfolio;
+use App\Services\SearchEngineIndexingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -57,6 +58,9 @@ class AdminPortfolioController extends Controller
             'status' => 'published',
             'published_at' => now(),
         ]);
+
+        $publicUrl = rtrim(config('app.frontend_url'), '/') . '/' . $portfolio->user->slug;
+        SearchEngineIndexingService::notifyPortfolioPublished($publicUrl);
 
         return response()->json([
             'message' => 'Portfolio publie avec succes',

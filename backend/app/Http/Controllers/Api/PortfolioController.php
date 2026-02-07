@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdatePortfolioRequest;
 use App\Http\Resources\PortfolioResource;
+use App\Services\SearchEngineIndexingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -165,10 +166,13 @@ class PortfolioController extends Controller
         $portfolio = $user->portfolio;
         $portfolio->publish();
 
+        $publicUrl = rtrim(config('app.frontend_url'), '/') . '/' . $user->slug;
+        SearchEngineIndexingService::notifyPortfolioPublished($publicUrl);
+
         return response()->json([
             'data' => new PortfolioResource($portfolio->fresh(['skills', 'projects'])),
             'message' => 'Portfolio publie avec succes',
-            'public_url' => config('app.frontend_url') . '/p/' . $user->slug,
+            'public_url' => $publicUrl,
         ]);
     }
 }
