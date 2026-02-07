@@ -13,6 +13,5 @@ Disallow: /p/dashboard/
 Disallow: /p/admin/
 Disallow: /p/preview
 
-# Sitemap dynamique (inclut tous les portfolios publiés)
-# Mettre à jour l'URL si l'API est sur un autre domaine
-Sitemap: https://apiportfolio.innosft.com/api/public/sitemap.xml
+# Sitemap portfolio — même domaine (recommandé pour Google Search Console)
+Sitemap: https://innosft.com/p/sitemap-portfolios.xml
