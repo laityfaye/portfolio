@@ -13,5 +13,5 @@ Disallow: /p/dashboard/
 Disallow: /p/admin/
 Disallow: /p/preview
 
-# Sitemap portfolio — même domaine (recommandé pour Google Search Console)
-Sitemap: https://innosft.com/p/sitemap-portfolios.xml
+# Sitemap portfolio — servi par l'API (XML) car /p/* renvoie index.html en SPA
+Sitemap: https://apiportfolio.innosft.com/sitemap-portfolios.xml
