@@ -215,10 +215,11 @@ class PayTechController extends Controller
         // Activer l'utilisateur
         $payment->user->update(['status' => 'active']);
 
-        // Durée de vie portfolio : 1 an
+        // Durée de vie portfolio : 1 an. Publier le portfolio dès que le paiement est confirmé.
         $portfolio = $payment->user->portfolio;
         if ($portfolio) {
             $portfolio->update(['expires_at' => now()->addYear()]);
+            $portfolio->publish();
         }
 
         Log::info('PayTech payment approved', ['ref_command' => $refCommand]);

@@ -491,6 +491,7 @@ const ThemeEditor = ({ portfolio, onUpdate }) => {
         onUpdate();
         setShowPreviewModal(false);
       } else {
+        setShowPreviewModal(false);
         const response = await paymentsApi.requestPayTech();
         if (response?.redirect_url) {
           if (response.ref_command) {
@@ -507,7 +508,6 @@ const ThemeEditor = ({ portfolio, onUpdate }) => {
         || (typeof data?.errors === 'object' ? Object.values(data.errors).flat().join(' ') : null)
         || (isActive ? 'Erreur lors de la publication' : 'Erreur lors de l\'initialisation du paiement. Vérifiez votre connexion ou réessayez.');
       toast.error(msg);
-      // 409 = déjà payé / paiement en attente : rafraîchir user et portfolio
       if (error.response?.status === 409) {
         refreshUser?.();
         onUpdate();
