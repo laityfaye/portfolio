@@ -132,7 +132,8 @@ class AuthController extends Controller
             ['token' => Hash::make($token), 'created_at' => now()]
         );
 
-        $resetUrl = rtrim(config('app.frontend_url'), '/') . '/p/reset-password?token=' . urlencode($token) . '&email=' . urlencode($email);
+        $baseUrl = rtrim(config('app.frontend_url'), '/');
+        $resetUrl = $baseUrl . '/reset-password?token=' . urlencode($token) . '&email=' . urlencode($email);
 
         try {
             Mail::raw(
