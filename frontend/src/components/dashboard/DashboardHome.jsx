@@ -1,10 +1,9 @@
 import { motion } from 'framer-motion';
-import { useState, useEffect } from 'react';
-import { FaRocket, FaEye, FaEdit, FaClock, FaCheck, FaExclamationTriangle, FaLink, FaShareAlt, FaCreditCard, FaCalendarAlt } from 'react-icons/fa';
+import { useState } from 'react';
+import { FaRocket, FaEye, FaEdit, FaClock, FaCheck, FaLink, FaShareAlt, FaCreditCard, FaCalendarAlt } from 'react-icons/fa';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { portfolioApi } from '../../api/portfolio';
-import { pricingApi, getDisplayPrice } from '../../api/pricing';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
@@ -26,11 +25,6 @@ const DashboardHome = ({ portfolio, user, onRefresh }) => {
   const { isDarkMode } = useTheme();
   const { isActive, isPending, hasPaid } = useAuth();
   const navigate = useNavigate();
-  const [pricingData, setPricingData] = useState(null);
-  const portfolioPrice = getDisplayPrice(portfolio, pricingData);
-  useEffect(() => {
-    pricingApi.getPublic().then(setPricingData).catch(() => setPricingData(null));
-  }, []);
   const isOnline = portfolio?.is_online;
   const expiresAt = portfolio?.expires_at;
   const expired = portfolio?.status === 'published' && !isOnline && expiresAt;
@@ -189,38 +183,6 @@ const DashboardHome = ({ portfolio, user, onRefresh }) => {
         </motion.div>
       )}
 
-      {/* Warning if pending */}
-      {isPending && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className={`glass-effect-strong p-4 sm:p-5 rounded-xl border ${
-            isDarkMode ? 'border-yellow-500/20 bg-yellow-500/5' : 'border-yellow-200 bg-yellow-50'
-          }`}
-        >
-          <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4">
-            <div className={`p-2.5 sm:p-3 rounded-lg w-fit ${isDarkMode ? 'bg-yellow-500/20' : 'bg-yellow-100'}`}>
-              <FaExclamationTriangle className="text-yellow-500 text-lg sm:text-xl" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className={`font-semibold text-base sm:text-lg mb-1 ${isDarkMode ? 'text-yellow-400' : 'text-yellow-800'}`}>
-                Compte en attente de validation
-              </p>
-              <p className={`text-xs sm:text-sm ${isDarkMode ? 'text-yellow-400/80' : 'text-yellow-700'}`}>
-                Envoyez <strong>{portfolioPrice.formatted}</strong> par <strong>Orange Money</strong> ou <strong>Wave</strong> au{' '}
-                <a
-                  href="tel:780186229"
-                  className={`font-bold hover:underline ${isDarkMode ? 'text-yellow-300' : 'text-yellow-800'}`}
-                >
-                  78 018 62 29
-                </a>
-                {' '}pour activer votre compte.
-              </p>
-            </div>
-          </div>
-        </motion.div>
-      )}
-
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {stats.map((stat, index) => (
@@ -258,59 +220,54 @@ const DashboardHome = ({ portfolio, user, onRefresh }) => {
           isDarkMode ? 'border-gray-800' : 'border-gray-200'
         }`}
       >
-        <h2 className={`text-xl font-bold mb-6 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+        <h2 className={`text-xl font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
           Actions rapides
         </h2>
-        <div className="flex flex-wrap gap-4">
+        <p className={`text-sm mb-6 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+          Configurez votre portfolio en plusieurs étapes : Hero (présentation), À propos, Compétences, Projets, Contact et Thème. Chaque section se personnalise depuis le menu latéral.
+        </p>
+        <div className="flex flex-col xs:flex-row flex-wrap gap-3 sm:gap-4">
           {portfolio?.status !== 'published' && hasPaid && (
             <motion.button
               onClick={handlePublish}
-              className={`w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r ${dashboardTheme.gradient} text-white font-semibold rounded-xl shadow-lg shadow-red-500/30 hover:shadow-xl hover:shadow-red-500/40 transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2 text-sm sm:text-base`}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              className={`w-full xs:flex-1 sm:flex-initial min-h-[44px] px-4 sm:px-6 py-3 sm:py-2.5 bg-gradient-to-r ${dashboardTheme.gradient} text-white font-semibold rounded-xl shadow-lg shadow-red-500/30 hover:shadow-xl hover:shadow-red-500/40 transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2 text-xs xs:text-sm sm:text-base`}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
-              <FaRocket />
-              Publier mon portfolio
+              <FaRocket className="flex-shrink-0" />
+              <span className="truncate">Publier mon portfolio</span>
             </motion.button>
-          )}
-          {portfolio?.status !== 'published' && !hasPaid && (
-            <Link
-              to="/dashboard/payment"
-              className={`w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-semibold rounded-xl shadow-lg shadow-orange-500/30 hover:shadow-xl hover:shadow-orange-500/40 transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2 text-sm sm:text-base`}
-            >
-              <FaCreditCard />
-              Payer pour publier
-            </Link>
           )}
           {isOnline && (
             <motion.a
               href={`/p/${user?.slug}`}
               target="_blank"
               rel="noopener noreferrer"
-              className={`w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 border-2 border-red-500 text-red-500 font-semibold rounded-xl hover:bg-red-500/10 transition-all flex items-center justify-center gap-2 text-sm sm:text-base ${
+              className={`w-full xs:flex-1 sm:flex-initial min-h-[44px] px-4 sm:px-6 py-3 sm:py-2.5 border-2 border-red-500 text-red-500 font-semibold rounded-xl hover:bg-red-500/10 transition-all flex items-center justify-center gap-2 text-xs xs:text-sm sm:text-base ${
                 isDarkMode ? 'border-red-500 text-red-400 hover:bg-red-500/20' : 'border-red-500 text-red-500 hover:bg-red-50'
               }`}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
-              <FaEye />
-              Voir mon portfolio
+              <FaEye className="flex-shrink-0" />
+              <span className="truncate">Voir mon portfolio</span>
             </motion.a>
           )}
           <motion.div
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            className="w-full xs:flex-1 sm:flex-initial min-w-0"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
           >
             <Link 
               to="/dashboard/hero" 
-              className={`w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 border-2 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 text-sm sm:text-base ${
+              className={`w-full min-h-[44px] px-4 sm:px-6 py-3 sm:py-2.5 border-2 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 text-xs xs:text-sm sm:text-base text-center ${
                 isDarkMode 
                   ? 'border-gray-700 text-gray-300 hover:bg-gray-800/50' 
                   : 'border-gray-300 text-gray-700 hover:bg-gray-100'
               }`}
             >
-              <FaEdit />
-              Modifier le Hero
+              <FaEdit className="flex-shrink-0" />
+              <span className="min-w-0 break-words">Commencer à personnaliser</span>
             </Link>
           </motion.div>
         </div>

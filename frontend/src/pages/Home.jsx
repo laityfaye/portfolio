@@ -9,8 +9,6 @@ import {
 import { useTheme, themes } from '../context/ThemeContext';
 import { getPublicImageUrl } from '../utils/imageUtils';
 import { useAuth } from '../context/AuthContext';
-import { pricingApi, getPortfolioPrice } from '../api/pricing';
-
 const TEMPLATES = [
   { id: 'classic', name: 'Classic', accent: '#3b82f6' },
   { id: 'minimal', name: 'Minimal', accent: '#8b5cf6' },
@@ -66,25 +64,8 @@ const Home = () => {
   const [iframeKey, setIframeKey] = useState(0);
   const [iframeLoaded, setIframeLoaded] = useState(false);
   const [showControls, setShowControls] = useState(true);
-  const [pricingData, setPricingData] = useState(null);
-  
+
   const heroImageUrl = 'https://images.unsplash.com/photo-1551650975-87deedd944c3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1974&q=80';
-
-  const pricingModels = pricingData?.data ?? [];
-  const portfolioPrice = getPortfolioPrice(pricingData);
-  // Prix par template (Classic, Minimal, Elegant, Luxe)
-  const templatePrices = TEMPLATES.map((t) => {
-    const model = pricingModels.find((m) => m.template === t.id);
-    return {
-      ...t,
-      amount: model != null ? Number(model.amount) : portfolioPrice.amount,
-      currency: model?.currency ?? portfolioPrice.currency,
-    };
-  });
-
-  useEffect(() => {
-    pricingApi.getPublic().then(setPricingData).catch(() => setPricingData(null));
-  }, []);
 
   // Précharger l'image
   useEffect(() => {
@@ -123,7 +104,7 @@ const Home = () => {
 
   const steps = [
     { step: 'Creez votre compte', desc: 'Inscription rapide en 2 minutes' },
-    { step: 'Envoyez votre preuve de paiement', desc: `Seulement ${portfolioPrice.formatted}` },
+    { step: 'Activez votre compte', desc: 'Suivez les instructions envoyées par email' },
     { step: 'Personnalisez votre portfolio', desc: 'Modifiez chaque section a votre image' },
     { step: 'Publiez et partagez', desc: 'Votre URL unique est prete' },
   ];
@@ -557,7 +538,7 @@ const Home = () => {
               Creez votre portfolio professionnel des maintenant
             </motion.p>
 
-            {/* Enhanced Price Card */}
+            {/* CTA Card */}
             <motion.div
               initial={{ opacity: 0, y: 30, scale: 0.95 }}
               whileInView={{ opacity: 1, y: 0, scale: 1 }}
@@ -574,44 +555,6 @@ const Home = () => {
               <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-red-600/10 to-transparent rounded-full blur-3xl" />
               
               <div className="relative z-10">
-                {/* Prix par modèle (Classic, Minimal, Elegant, Luxe) */}
-                <div className="mb-6">
-                  <p className={`text-center text-sm font-medium mb-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                    Tarifs par template
-                  </p>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-4">
-                    {templatePrices.map((t) => (
-                      <div
-                        key={t.id}
-                        className={`rounded-xl p-4 text-center border ${
-                          isDarkMode
-                            ? 'bg-gray-800/50 border-gray-700/50'
-                            : 'bg-gray-50 border-gray-100'
-                        }`}
-                        style={{ borderColor: isDarkMode ? undefined : t.accent + '40' }}
-                      >
-                        <p className={`font-semibold text-xs sm:text-sm mb-1 ${isDarkMode ? 'text-gray-200' : 'text-gray-700'}`} style={{ color: isDarkMode ? undefined : t.accent }}>
-                          {t.name}
-                        </p>
-                        <p className="text-sm sm:text-base font-bold bg-gradient-to-r from-red-500 to-red-600 bg-clip-text text-transparent">
-                          {t.amount.toLocaleString('fr-FR')} {t.currency}
-                        </p>
-                        <p className={`text-[10px] sm:text-xs mt-0.5 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                          1 an
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                  <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold ${
-                    isDarkMode 
-                      ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
-                      : 'bg-green-50 text-green-600 border border-green-200'
-                  }`}>
-                    <FaCheck className="text-green-500" />
-                    <span>Paiement unique • Accès pour 1 an</span>
-                  </div>
-                </div>
-
                 {/* Features List */}
                 <div className="mb-8 space-y-3 sm:space-y-4">
                   {['Portfolio personnalisable', '13 themes de couleur', 'URL unique personnelle', 'Support technique'].map((item, i) => (
@@ -1019,13 +962,9 @@ const Home = () => {
                 isDarkMode ? 'bg-gray-900 border-gray-800' : 'bg-gray-50 border-gray-100'
               } pb-safe`}>
                 <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 overflow-hidden">
-                  <div className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg flex-shrink-0 ${isDarkMode ? 'bg-red-500/15' : 'bg-red-50'}`}>
-                    <span className="text-sm sm:text-base font-bold text-red-500">{portfolioPrice.amount.toLocaleString('fr-FR')}</span>
-                    <span className="text-[10px] sm:text-xs font-semibold text-red-500/80 ml-1">{portfolioPrice.currency}</span>
-                  </div>
                   <div className="min-w-0">
                     <p className={`text-[11px] sm:text-xs font-semibold truncate ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
-                      Paiement unique • Accès pour 1 an
+                      Portfolio personnalisable
                     </p>
                     <p className={`text-[10px] sm:text-[11px] flex items-center gap-1 mt-0.5 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                       <FaCheck className="text-green-500 text-[9px] flex-shrink-0" /> <span className="truncate">Créez en quelques minutes</span>

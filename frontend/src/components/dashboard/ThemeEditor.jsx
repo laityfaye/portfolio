@@ -5,7 +5,6 @@ import { useTheme, themes } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { portfolioApi } from '../../api/portfolio';
 import { paymentsApi } from '../../api/payments';
-import { pricingApi, getPortfolioPrice } from '../../api/pricing';
 import toast from 'react-hot-toast';
 
 const TEMPLATES = [
@@ -289,7 +288,7 @@ const PreviewModal = ({
                   )}
                 </motion.button>
 
-                {/* Badge Portfolio publié ou Bouton Payer pour publier / Publier */}
+                {/* Badge Portfolio publié ou Bouton Publier le Portfolio */}
                 {isPublished ? (
                   <span className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg font-semibold text-xs bg-green-500/20 text-green-600 dark:text-green-400 border border-green-500/30`}>
                     <FaGlobe className="text-xs" />
@@ -299,26 +298,17 @@ const PreviewModal = ({
                   <motion.button
                     onClick={onPayToPublish}
                     disabled={payPublishLoading}
-                    className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg font-semibold text-xs transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
-                      isActive
-                        ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-green-500/30 hover:shadow-green-500/40'
-                        : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-amber-500/30 hover:shadow-amber-500/40'
-                    }`}
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg font-semibold text-xs transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-r from-green-500 to-green-600 text-white shadow-green-500/30 hover:shadow-green-500/40"
                     whileHover={{ scale: payPublishLoading ? 1 : 1.05 }}
                     whileTap={{ scale: payPublishLoading ? 1 : 0.95 }}
-                    title={isActive ? 'Publier le portfolio' : 'Payer pour publier'}
+                    title="Publier le portfolio"
                   >
                     {payPublishLoading ? (
                       <FaSpinner className="animate-spin" />
-                    ) : isActive ? (
-                      <>
-                        <FaGlobe className="text-xs" />
-                        <span className="hidden sm:inline">Publier</span>
-                      </>
                     ) : (
                       <>
-                        <FaCreditCard className="text-xs" />
-                        <span className="hidden sm:inline">Payer pour publier</span>
+                        <FaGlobe className="text-xs" />
+                        <span className="hidden sm:inline">Publier le portfolio</span>
                       </>
                     )}
                   </motion.button>
@@ -447,26 +437,6 @@ const ThemeEditor = ({ portfolio, onUpdate }) => {
   const [selectedColor, setSelectedColor] = useState(portfolio?.theme_color || 'cyan');
   const [selectedMode, setSelectedMode] = useState(portfolio?.theme_mode || 'dark');
   const [selectedTemplate, setSelectedTemplate] = useState(portfolio?.template || 'classic');
-  const [pricingData, setPricingData] = useState(null);
-
-  const pricingModels = pricingData?.data ?? [];
-  const portfolioPrice = getPortfolioPrice(pricingData);
-  const templatePrices = TEMPLATES.map((t) => {
-    const model = pricingModels.find((m) => m.template === t.id);
-    return {
-      ...t,
-      amount: model != null ? Number(model.amount) : portfolioPrice.amount,
-      currency: model?.currency ?? portfolioPrice.currency,
-      formatted: model != null
-        ? `${Number(model.amount).toLocaleString('fr-FR')} ${model.currency}`
-        : portfolioPrice.formatted,
-    };
-  });
-
-  useEffect(() => {
-    pricingApi.getPublic().then(setPricingData).catch(() => setPricingData(null));
-  }, []);
-
   // Build preview URL (uses authenticated preview route)
   const portfolioUrl = `${window.location.origin}/p/preview`;
 
@@ -631,7 +601,7 @@ const ThemeEditor = ({ portfolio, onUpdate }) => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {templatePrices.map((tpl) => {
+          {TEMPLATES.map((tpl) => {
             const Icon = tpl.icon;
             const isCurrent = portfolio?.template === tpl.id;
             const accent = tpl.accent || '#ef4444';
@@ -691,12 +661,6 @@ const ThemeEditor = ({ portfolio, onUpdate }) => {
                 </h3>
                 <p className={`text-sm leading-relaxed ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                   {tpl.description}
-                </p>
-                <p className={`mt-2 text-sm font-semibold ${isCurrent ? 'text-red-500' : isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                  {tpl.formatted}
-                  <span className={`text-xs font-normal ml-1 ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
-                    / 1 an
-                  </span>
                 </p>
                 <p className={`mt-3 text-xs font-medium min-h-[1.25rem] ${
                   isCurrent ? 'invisible' : isDarkMode ? 'text-gray-500 group-hover:text-gray-400' : 'text-gray-400 group-hover:text-gray-600'

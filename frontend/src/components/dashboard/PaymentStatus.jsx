@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaCheck, FaClock, FaTimes, FaInfoCircle, FaCreditCard, FaImage, FaEye, FaSpinner, FaMobileAlt, FaCalendarAlt } from 'react-icons/fa';
+import { FaCheck, FaClock, FaTimes, FaCreditCard, FaImage, FaEye, FaSpinner, FaMobileAlt, FaCalendarAlt } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { paymentsApi } from '../../api/payments';
-import { pricingApi, getDisplayPrice } from '../../api/pricing';
 import { getImageUrl, getPublicImageUrl } from '../../utils/imageUtils';
 import toast from 'react-hot-toast';
 
@@ -22,13 +21,7 @@ const PaymentStatus = ({ user, portfolio }) => {
   const [loading, setLoading] = useState(true);
   const [selectedPayment, setSelectedPayment] = useState(null);
   const [payTechLoading, setPayTechLoading] = useState(false);
-  const [pricingData, setPricingData] = useState(null);
-  const portfolioPrice = getDisplayPrice(portfolio, pricingData);
 
-  useEffect(() => {
-    pricingApi.getPublic().then(setPricingData).catch(() => setPricingData(null));
-  }, []);
-  
   // Thème rouge fixe pour le dashboard
   const dashboardTheme = {
     gradient: 'from-red-500 to-red-600',
@@ -140,67 +133,6 @@ const PaymentStatus = ({ user, portfolio }) => {
         </div>
       </motion.div>
 
-      {/* Account Status */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className={`glass-effect-strong rounded-xl p-4 sm:p-5 md:p-6 border ${
-          isDarkMode ? 'border-gray-800' : 'border-gray-200'
-        }`}
-      >
-        <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
-          <div className={`p-2 sm:p-3 rounded-xl bg-gradient-to-r ${dashboardTheme.gradient} flex-shrink-0`}>
-            <FaCreditCard className="text-white text-lg sm:text-xl" />
-          </div>
-          <h2 className={`text-lg sm:text-xl md:text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
-            Statut du compte
-          </h2>
-        </div>
-        
-        <div className={`p-4 sm:p-5 md:p-6 rounded-xl border-2 ${
-          isActive
-            ? isDarkMode
-              ? 'bg-green-500/10 border-green-500/30'
-              : 'bg-green-50 border-green-200'
-            : isDarkMode
-              ? 'bg-yellow-500/10 border-yellow-500/30'
-              : 'bg-yellow-50 border-yellow-200'
-        }`}>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
-            <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-full flex items-center justify-center flex-shrink-0 ${
-              isActive
-                ? isDarkMode ? 'bg-green-500/20' : 'bg-green-100'
-                : isDarkMode ? 'bg-yellow-500/20' : 'bg-yellow-100'
-            }`}>
-              {isActive ? (
-                <FaCheck className={`text-xl sm:text-2xl ${isDarkMode ? 'text-green-400' : 'text-green-600'}`} />
-              ) : (
-                <FaClock className={`text-xl sm:text-2xl ${isDarkMode ? 'text-yellow-400' : 'text-yellow-600'}`} />
-              )}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className={`text-base sm:text-lg md:text-xl font-bold mb-1 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
-                {isActive ? 'Compte Actif' : 'Compte en attente de validation'}
-              </p>
-              <p className={`text-xs sm:text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                {isActive
-                  ? 'Votre compte est actif. Vous pouvez publier votre portfolio.'
-                  : 'Payez en ligne via PayTech pour activer votre compte et publier votre portfolio.'}
-              </p>
-            </div>
-            {isActive && (
-              <div className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg font-semibold text-xs sm:text-sm flex-shrink-0 ${
-                isDarkMode
-                  ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-                  : 'bg-green-100 text-green-700 border border-green-200'
-              }`}>
-                Actif
-              </div>
-            )}
-          </div>
-        </div>
-      </motion.div>
-
       {/* Abonnement portfolio : durée de vie 1 an */}
       {isActive && portfolio && (
         <motion.div
@@ -262,33 +194,52 @@ const PaymentStatus = ({ user, portfolio }) => {
         </motion.div>
       )}
 
-      {/* Payment Info - Masqué si l'utilisateur a déjà payé */}
-      {!isActive && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className={`p-4 sm:p-5 md:p-6 rounded-xl border-2 flex flex-col sm:flex-row items-start gap-3 sm:gap-4 ${
-            isDarkMode
-              ? 'bg-blue-500/10 border-blue-500/30'
-              : 'bg-blue-50 border-blue-200'
-          }`}
-        >
-          <div className={`p-2 sm:p-3 rounded-xl flex-shrink-0 ${
-            isDarkMode ? 'bg-blue-500/20' : 'bg-blue-100'
-          }`}>
-            <FaInfoCircle className={`text-lg sm:text-xl ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
+      {/* Durée du portfolio - texte explicatif + bouton Renouveler */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05 }}
+        className={`glass-effect-strong rounded-xl p-4 sm:p-5 md:p-6 border ${
+          isDarkMode ? 'border-gray-800' : 'border-gray-200'
+        }`}
+      >
+        <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+          <div className={`p-2 sm:p-3 rounded-xl flex-shrink-0 ${isDarkMode ? 'bg-blue-500/20' : 'bg-blue-100'}`}>
+            <FaCalendarAlt className={`text-lg sm:text-xl ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
           </div>
-          <div className="flex-1 min-w-0">
-            <p className={`text-base sm:text-lg font-bold mb-2 ${isDarkMode ? 'text-blue-400' : 'text-blue-800'}`}>
-              Montant à payer: <span className="text-xl sm:text-2xl">{portfolioPrice.formatted}</span>
-            </p>
-            <p className={`text-xs sm:text-sm ${isDarkMode ? 'text-blue-300' : 'text-blue-700'}`}>
-              Payez en ligne via Orange Money, Wave ou Free Money (PayTech). Votre compte sera activé automatiquement dès que le paiement est confirmé.
-            </p>
-          </div>
-        </motion.div>
-      )}
+          <h2 className={`text-lg sm:text-xl md:text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+            Durée du portfolio
+          </h2>
+        </div>
+        <p className={`text-sm sm:text-base mb-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+          Votre portfolio est actif pendant <strong>1 an</strong> à compter de la date de paiement. Après cette période, renouvelez pour continuer à le garder en ligne et à le rendre visible.
+        </p>
+        {portfolio?.expires_at && (
+          <p className={`text-sm sm:text-base font-semibold mb-4 ${isDarkMode ? 'text-blue-400' : 'text-blue-700'}`}>
+            Date d'expiration : {formatExpiresAt(portfolio.expires_at)}
+          </p>
+        )}
+        {isActive && (
+          <motion.button
+            onClick={handlePayTech}
+            disabled={payTechLoading}
+            className={`flex items-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-semibold text-sm sm:text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+              isDarkMode
+                ? 'bg-red-500/20 text-red-400 border border-red-500/40 hover:bg-red-500/30'
+                : 'bg-red-50 text-red-600 border border-red-200 hover:bg-red-100'
+            }`}
+            whileHover={{ scale: payTechLoading ? 1 : 1.02 }}
+            whileTap={{ scale: payTechLoading ? 1 : 0.98 }}
+          >
+            {payTechLoading ? (
+              <FaSpinner className="animate-spin" />
+            ) : (
+              <FaCreditCard className="text-sm" />
+            )}
+            <span>{payTechLoading ? 'Redirection...' : 'Renouveler le portfolio'}</span>
+          </motion.button>
+        )}
+      </motion.div>
 
       {/* PayTech Button - Primary payment method (ou renouvellement si portfolio expiré) */}
       {showPayButton && (
@@ -356,6 +307,9 @@ const PaymentStatus = ({ user, portfolio }) => {
             Historique des paiements
           </h2>
         </div>
+        <p className={`text-sm mb-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+          Retrouvez ci-dessous l'historique de vos paiements et leur statut.
+        </p>
 
         {loading ? (
           <div className="flex items-center justify-center py-8 sm:py-12">

@@ -83,9 +83,9 @@ const Dashboard = () => {
     { path: '/dashboard/theme', icon: <FaPalette />, label: 'Thème', step: 6 },
   ];
 
-  const otherItems = [
-    { path: '/dashboard/payment', icon: <FaCreditCard />, label: 'Paiement' },
-  ];
+  const otherItems = portfolio?.status === 'published'
+    ? [{ path: '/dashboard/payment', icon: <FaCreditCard />, label: 'Paiement' }]
+    : [];
 
   if (loading) {
     return (
