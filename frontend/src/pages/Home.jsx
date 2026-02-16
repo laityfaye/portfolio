@@ -590,13 +590,13 @@ const Home = () => {
                         }`}
                         style={{ borderColor: isDarkMode ? undefined : t.accent + '40' }}
                       >
-                        <p className={`font-semibold text-sm mb-1 ${isDarkMode ? 'text-gray-200' : 'text-gray-700'}`} style={{ color: isDarkMode ? undefined : t.accent }}>
+                        <p className={`font-semibold text-xs sm:text-sm mb-1 ${isDarkMode ? 'text-gray-200' : 'text-gray-700'}`} style={{ color: isDarkMode ? undefined : t.accent }}>
                           {t.name}
                         </p>
-                        <p className="text-xl sm:text-2xl font-black bg-gradient-to-r from-red-500 to-red-600 bg-clip-text text-transparent">
+                        <p className="text-sm sm:text-base font-bold bg-gradient-to-r from-red-500 to-red-600 bg-clip-text text-transparent">
                           {t.amount.toLocaleString('fr-FR')} {t.currency}
                         </p>
-                        <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                        <p className={`text-[10px] sm:text-xs mt-0.5 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
                           1 an
                         </p>
                       </div>
@@ -1020,7 +1020,7 @@ const Home = () => {
               } pb-safe`}>
                 <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 overflow-hidden">
                   <div className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg flex-shrink-0 ${isDarkMode ? 'bg-red-500/15' : 'bg-red-50'}`}>
-                    <span className="text-lg sm:text-2xl font-black text-red-500">{portfolioPrice.amount.toLocaleString('fr-FR')}</span>
+                    <span className="text-sm sm:text-base font-bold text-red-500">{portfolioPrice.amount.toLocaleString('fr-FR')}</span>
                     <span className="text-[10px] sm:text-xs font-semibold text-red-500/80 ml-1">{portfolioPrice.currency}</span>
                   </div>
                   <div className="min-w-0">
