@@ -89,7 +89,9 @@ const Portfolio = () => {
         const response = await portfolioApi.getPublic(slug);
         setData(response.data);
       } catch (err) {
-        setError(err.response?.data?.message || 'Portfolio non trouve');
+        const msg = err.response?.data?.message || 'Portfolio non trouve';
+        const code = err.response?.data?.code;
+        setError({ message: msg, code });
       } finally {
         setLoading(false);
       }
@@ -120,11 +122,20 @@ const Portfolio = () => {
   }
 
   if (error) {
+    const msg = typeof error === 'string' ? error : error?.message || 'Portfolio non trouvé';
+    const isExpired = typeof error === 'object' && error?.code === 'PORTFOLIO_EXPIRED';
     return (
-      <div className="min-h-screen flex items-center justify-center bg-dark-900 text-white">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold mb-4">Portfolio non trouve</h1>
-          <p className="text-gray-400">{error}</p>
+      <div className="min-h-screen flex items-center justify-center bg-dark-900 text-white px-4">
+        <div className="text-center max-w-md">
+          <h1 className="text-4xl font-bold mb-4">
+            {isExpired ? 'Portfolio hors ligne' : 'Portfolio non trouvé'}
+          </h1>
+          <p className="text-gray-400 mb-6">{msg}</p>
+          {isExpired && (
+            <p className="text-sm text-gray-500">
+              Connectez-vous à votre espace client pour renouveler votre abonnement et remettre votre portfolio en ligne.
+            </p>
+          )}
         </div>
       </div>
     );

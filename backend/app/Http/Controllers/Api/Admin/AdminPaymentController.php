@@ -50,8 +50,14 @@ class AdminPaymentController extends Controller
         // Activate user account
         $payment->user->update(['status' => 'active']);
 
+        // Durée de vie portfolio : 1 an. Chaque approbation = en ligne jusqu'à now() + 1 an
+        $portfolio = $payment->user->portfolio;
+        if ($portfolio) {
+            $portfolio->update(['expires_at' => now()->addYear()]);
+        }
+
         return response()->json([
-            'message' => 'Paiement approuve. Le compte utilisateur a ete active.',
+            'message' => 'Paiement approuve. Le compte utilisateur a ete active. Le portfolio est en ligne pour 1 an.',
             'payment' => new PaymentResource($payment->fresh(['user', 'verifier'])),
         ]);
     }

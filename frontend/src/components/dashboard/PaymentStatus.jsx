@@ -1,19 +1,33 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaCheck, FaClock, FaTimes, FaInfoCircle, FaCreditCard, FaImage, FaEye, FaSpinner, FaMobileAlt } from 'react-icons/fa';
+import { FaCheck, FaClock, FaTimes, FaInfoCircle, FaCreditCard, FaImage, FaEye, FaSpinner, FaMobileAlt, FaCalendarAlt } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { paymentsApi } from '../../api/payments';
+import { pricingApi, getDisplayPrice } from '../../api/pricing';
 import { getImageUrl, getPublicImageUrl } from '../../utils/imageUtils';
 import toast from 'react-hot-toast';
 
-const PaymentStatus = ({ user }) => {
+const formatExpiresAt = (expiresAt) => {
+  if (!expiresAt) return null;
+  const d = new Date(expiresAt);
+  return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+};
+
+const PaymentStatus = ({ user, portfolio }) => {
   const { isDarkMode } = useTheme();
   const { isActive, isPending } = useAuth();
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedPayment, setSelectedPayment] = useState(null);
   const [payTechLoading, setPayTechLoading] = useState(false);
+  const [pricingData, setPricingData] = useState(null);
+  const portfolioPrice = getDisplayPrice(portfolio, pricingData);
+
+  useEffect(() => {
+    pricingApi.getPublic().then(setPricingData).catch(() => setPricingData(null));
+  }, []);
   
   // Thème rouge fixe pour le dashboard
   const dashboardTheme = {
@@ -104,7 +118,9 @@ const PaymentStatus = ({ user }) => {
     }
   };
 
-  const hasPendingOrApproved = payments.some((p) => p.status === 'pending' || p.status === 'approved');
+  const hasPending = payments.some((p) => p.status === 'pending');
+  const hasApprovedAndOnline = payments.some((p) => p.status === 'approved') && portfolio?.is_online;
+  const showPayButton = !hasPending && !hasApprovedAndOnline;
 
   return (
     <div className="space-y-6">
@@ -185,6 +201,67 @@ const PaymentStatus = ({ user }) => {
         </div>
       </motion.div>
 
+      {/* Abonnement portfolio : durée de vie 1 an */}
+      {isActive && portfolio && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          className={`rounded-xl border-2 flex flex-col sm:flex-row items-start gap-3 sm:gap-4 p-4 sm:p-5 ${
+            portfolio.is_online
+              ? isDarkMode
+                ? 'bg-green-500/10 border-green-500/30'
+                : 'bg-green-50 border-green-200'
+              : isDarkMode
+                ? 'bg-orange-500/10 border-orange-500/30'
+                : 'bg-orange-50 border-orange-200'
+          }`}
+        >
+          <div className={`p-2 sm:p-3 rounded-xl flex-shrink-0 ${
+            portfolio.is_online
+              ? isDarkMode ? 'bg-green-500/20' : 'bg-green-100'
+              : isDarkMode ? 'bg-orange-500/20' : 'bg-orange-100'
+          }`}>
+            {portfolio.is_online ? (
+              <FaCalendarAlt className={`text-lg sm:text-xl ${isDarkMode ? 'text-green-400' : 'text-green-600'}`} />
+            ) : (
+              <FaClock className={`text-lg sm:text-xl ${isDarkMode ? 'text-orange-400' : 'text-orange-600'}`} />
+            )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className={`text-base sm:text-lg font-bold mb-1 ${
+              portfolio.is_online
+                ? isDarkMode ? 'text-green-400' : 'text-green-800'
+                : isDarkMode ? 'text-orange-400' : 'text-orange-800'
+            }`}>
+              {portfolio.is_online
+                ? `Votre portfolio est en ligne jusqu'au ${formatExpiresAt(portfolio.expires_at) || '—'}`
+                : 'Votre portfolio n\'est plus en ligne'}
+            </p>
+            <p className={`text-xs sm:text-sm ${
+              portfolio.is_online
+                ? isDarkMode ? 'text-green-300/80' : 'text-green-700'
+                : isDarkMode ? 'text-orange-300/80' : 'text-orange-700'
+            }`}>
+              {portfolio.is_online
+                ? 'Chaque paiement donne 1 an d\'hébergement. Pensez à renouveler avant la date pour éviter toute interruption.'
+                : 'Renouvelez votre abonnement (1 an) pour remettre votre portfolio en ligne.'}
+            </p>
+            {!portfolio.is_online && (
+              <Link
+                to="/dashboard/payment"
+                className={`inline-flex items-center gap-2 mt-3 px-4 py-2 rounded-lg font-semibold text-sm ${
+                  isDarkMode ? 'bg-orange-500/20 text-orange-300 hover:bg-orange-500/30' : 'bg-orange-200 text-orange-800 hover:bg-orange-300'
+                }`}
+              >
+                <FaCreditCard />
+                Renouveler l'abonnement
+              </Link>
+            )}
+          </div>
+        </motion.div>
+      )}
+
       {/* Payment Info - Masqué si l'utilisateur a déjà payé */}
       {!isActive && (
         <motion.div
@@ -204,7 +281,7 @@ const PaymentStatus = ({ user }) => {
           </div>
           <div className="flex-1 min-w-0">
             <p className={`text-base sm:text-lg font-bold mb-2 ${isDarkMode ? 'text-blue-400' : 'text-blue-800'}`}>
-              Montant à payer: <span className="text-xl sm:text-2xl">2 500 FCFA</span>
+              Montant à payer: <span className="text-xl sm:text-2xl">{portfolioPrice.formatted}</span>
             </p>
             <p className={`text-xs sm:text-sm ${isDarkMode ? 'text-blue-300' : 'text-blue-700'}`}>
               Payez en ligne via Orange Money, Wave ou Free Money (PayTech). Votre compte sera activé automatiquement dès que le paiement est confirmé.
@@ -213,8 +290,8 @@ const PaymentStatus = ({ user }) => {
         </motion.div>
       )}
 
-      {/* PayTech Button - Primary payment method */}
-      {!hasPendingOrApproved && (
+      {/* PayTech Button - Primary payment method (ou renouvellement si portfolio expiré) */}
+      {showPayButton && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -232,7 +309,9 @@ const PaymentStatus = ({ user }) => {
             </h2>
           </div>
           <p className={`text-sm mb-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-            Paiement sécurisé via Orange Money, Wave ou Free Money. Vous serez redirigé vers la plateforme PayTech.
+            {portfolio && !portfolio.is_online
+              ? 'Renouvelez votre abonnement (1 an) pour remettre votre portfolio en ligne. Paiement sécurisé via PayTech.'
+              : 'Paiement sécurisé via Orange Money, Wave ou Free Money. Vous serez redirigé vers la plateforme PayTech.'}
           </p>
           <motion.button
             onClick={handlePayTech}
@@ -249,7 +328,11 @@ const PaymentStatus = ({ user }) => {
             ) : (
               <>
                 <FaMobileAlt />
-                <span>Payer avec Orange Money / Wave / Free Money</span>
+                <span>
+                  {portfolio && !portfolio.is_online
+                    ? 'Renouveler avec Orange Money / Wave / Free Money'
+                    : 'Payer avec Orange Money / Wave / Free Money'}
+                </span>
               </>
             )}
           </motion.button>

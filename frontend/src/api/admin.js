@@ -38,7 +38,14 @@ export const adminPortfoliosApi = {
   getAll: (params = {}) => api.get('/admin/portfolios', { params }),
   getStats: () => api.get('/admin/portfolios/stats'),
   getOne: (id) => api.get(`/admin/portfolios/${id}`),
+  update: (id, data) => api.put(`/admin/portfolios/${id}`, data),
   publish: (id) => api.post(`/admin/portfolios/${id}/publish`),
   unpublish: (id) => api.post(`/admin/portfolios/${id}/unpublish`),
   delete: (id) => api.delete(`/admin/portfolios/${id}`),
+};
+
+// Admin Tarification (modèles de prix)
+export const adminPricingApi = {
+  getAll: () => api.get('/admin/pricing-models'),
+  update: (id, data) => api.put(`/admin/pricing-models/${id}`, data),
 };

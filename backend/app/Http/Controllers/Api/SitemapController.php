@@ -18,8 +18,11 @@ class SitemapController extends Controller
         $portfolioBase = str_ends_with($baseUrl, '/p') ? $baseUrl : $baseUrl . '/p';
 
         $users = User::where('status', 'active')
-            ->whereHas('portfolio', fn ($q) => $q->where('status', 'published'))
-            ->with('portfolio:id,user_id,published_at')
+            ->whereHas('portfolio', function ($q) {
+                $q->where('status', 'published')
+                    ->where('expires_at', '>', now());
+            })
+            ->with('portfolio:id,user_id,published_at,expires_at')
             ->get(['id', 'slug', 'first_name', 'last_name']);
 
         $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
+use App\Models\PricingModel;
 use App\Services\PayTechService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -28,25 +29,29 @@ class PayTechController extends Controller
         try {
             $user = $request->user();
 
-            // Vérifier si l'utilisateur a déjà un paiement en attente ou approuvé
             $existingPayment = $user->payments()
                 ->whereIn('status', ['pending', 'approved'])
                 ->first();
 
             if ($existingPayment) {
-                if ($existingPayment->isApproved()) {
+                if ($existingPayment->isPending()) {
                     return response()->json([
-                        'message' => 'Votre paiement a déjà été approuvé. Vous pouvez publier votre portfolio.',
+                        'message' => 'Vous avez déjà un paiement en attente. Consultez la page Paiement pour suivre son statut.',
+                        'error_code' => 'PAYMENT_PENDING',
+                    ], 409);
+                }
+                // Déjà approuvé : autoriser un nouveau paiement seulement pour renouveler (portfolio expiré)
+                if ($existingPayment->isApproved() && !$user->portfolio?->isExpired()) {
+                    return response()->json([
+                        'message' => 'Votre paiement a déjà été approuvé. Votre portfolio est en ligne.',
                         'error_code' => 'PAYMENT_ALREADY_APPROVED',
                     ], 409);
                 }
-                return response()->json([
-                    'message' => 'Vous avez déjà un paiement en attente. Consultez la page Paiement pour suivre son statut.',
-                    'error_code' => 'PAYMENT_PENDING',
-                ], 409);
             }
 
-            $amount = config('paytech.default_amount', 2500);
+            $portfolio = $user->portfolio;
+            $amount = $portfolio ? (int) $portfolio->getPriceAmount() : (int) PricingModel::getPortfolioYearlyAmount();
+            $currency = $portfolio ? $portfolio->getPriceCurrency() : (PricingModel::getBySlug('portfolio_1y')?->currency ?? 'XOF');
             $refCommand = 'PAY_' . $user->id . '_' . time() . '_' . bin2hex(random_bytes(4));
 
             $params = [
@@ -90,7 +95,7 @@ class PayTechController extends Controller
             'ref_command' => $refCommand,
             'token' => $response['token'] ?? null,
             'amount' => $amount,
-            'currency' => 'XOF',
+            'currency' => $currency,
             'status' => 'pending',
             'type' => 'paytech',
         ]);
@@ -209,6 +214,12 @@ class PayTechController extends Controller
 
         // Activer l'utilisateur
         $payment->user->update(['status' => 'active']);
+
+        // Durée de vie portfolio : 1 an
+        $portfolio = $payment->user->portfolio;
+        if ($portfolio) {
+            $portfolio->update(['expires_at' => now()->addYear()]);
+        }
 
         Log::info('PayTech payment approved', ['ref_command' => $refCommand]);
     }

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Routes, Route, NavLink, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-  FaHome, FaUsers, FaCreditCard, FaBriefcase,
+  FaHome, FaUsers, FaCreditCard, FaBriefcase, FaTag,
   FaSignOutAlt, FaBars, FaTimes, FaChartLine
 } from 'react-icons/fa';
 import { useAdmin } from '../../context/AdminContext';
@@ -15,6 +15,7 @@ import AdminDashboard from './AdminDashboard';
 import AdminUsers from './AdminUsers';
 import AdminPayments from './AdminPayments';
 import AdminPortfolios from './AdminPortfolios';
+import AdminPricing from './AdminPricing';
 
 const AdminLayout = () => {
   const { admin, logout } = useAdmin();
@@ -32,6 +33,7 @@ const AdminLayout = () => {
     { path: '/admin/users', icon: <FaUsers />, label: 'Utilisateurs' },
     { path: '/admin/payments', icon: <FaCreditCard />, label: 'Paiements' },
     { path: '/admin/portfolios', icon: <FaBriefcase />, label: 'Portfolios' },
+    { path: '/admin/pricing', icon: <FaTag />, label: 'Tarification' },
   ];
 
   return (
@@ -131,6 +133,7 @@ const AdminLayout = () => {
             <Route path="users" element={<AdminUsers />} />
             <Route path="payments" element={<AdminPayments />} />
             <Route path="portfolios" element={<AdminPortfolios />} />
+            <Route path="pricing" element={<AdminPricing />} />
           </Routes>
         </div>
       </main>

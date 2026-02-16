@@ -38,6 +38,13 @@ class PublicPortfolioController extends Controller
             ], 404);
         }
 
+        if ($user->portfolio->isExpired()) {
+            return response()->json([
+                'message' => 'Ce portfolio n\'est plus en ligne. Renouvelez votre abonnement pour le réactiver.',
+                'code' => 'PORTFOLIO_EXPIRED',
+            ], 404);
+        }
+
         return response()->json([
             'data' => new PublicPortfolioResource($user->portfolio),
         ]);
@@ -69,8 +76,12 @@ class PublicPortfolioController extends Controller
             ->with('portfolio')
             ->first();
 
-        if (!$user || !$user->portfolio || $user->portfolio->status !== 'published') {
-            return response()->json(['message' => 'Portfolio non trouvé.'], 404);
+        if (!$user || !$user->portfolio || !$user->portfolio->isOnline()) {
+            return response()->json([
+                'message' => $user?->portfolio?->isExpired()
+                    ? 'Ce portfolio n\'est plus en ligne. Renouvelez votre abonnement pour le réactiver.'
+                    : 'Portfolio non trouvé.',
+            ], 404);
         }
 
         $contactInfo = is_array($user->portfolio->contact_info)

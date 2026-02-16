@@ -31,6 +31,9 @@ class Portfolio extends Model
         'template',
         'status',
         'published_at',
+        'expires_at',
+        'amount',
+        'currency',
     ];
 
     protected function casts(): array
@@ -42,7 +45,28 @@ class Portfolio extends Model
             'contact_info' => 'array',
             'social_links' => 'array',
             'published_at' => 'datetime',
+            'expires_at' => 'datetime',
+            'amount' => 'decimal:2',
         ];
+    }
+
+    /** Montant à payer pour ce portfolio (prix personnalisé > prix du template > défaut). */
+    public function getPriceAmount(): float
+    {
+        if ($this->amount !== null && $this->amount > 0) {
+            return (float) $this->amount;
+        }
+        return (float) PricingModel::getAmountForTemplate($this->template);
+    }
+
+    /** Devise pour ce portfolio. */
+    public function getPriceCurrency(): string
+    {
+        if ($this->currency) {
+            return $this->currency;
+        }
+        $model = PricingModel::getByTemplate($this->template) ?? PricingModel::getBySlug('portfolio_1y');
+        return $model?->currency ?? 'FCFA';
     }
 
     public function user(): BelongsTo
@@ -63,6 +87,21 @@ class Portfolio extends Model
     public function isPublished(): bool
     {
         return $this->status === 'published';
+    }
+
+    /** Le portfolio est-il expiré (durée de vie 1 an dépassée) ? */
+    public function isExpired(): bool
+    {
+        if ($this->expires_at === null) {
+            return true; // Pas encore payé / pas d'abonnement
+        }
+        return $this->expires_at->isPast();
+    }
+
+    /** En ligne = publié et abonnement valide (non expiré). */
+    public function isOnline(): bool
+    {
+        return $this->isPublished() && !$this->isExpired();
     }
 
     public function publish(): void

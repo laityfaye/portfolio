@@ -1,15 +1,34 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FaUser, FaEnvelope, FaLock, FaEye, FaEyeSlash, FaPhone, FaCheck } from 'react-icons/fa';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
+import { pricingApi, getPortfolioPrice } from '../api/pricing';
 import toast, { Toaster } from 'react-hot-toast';
 
 const Register = () => {
   const { isDarkMode } = useTheme();
   const { register } = useAuth();
   const navigate = useNavigate();
+  const [pricingData, setPricingData] = useState(null);
+  const pricingModels = pricingData?.data ?? [];
+  const portfolioPrice = getPortfolioPrice(pricingData);
+  const templateOrder = ['classic', 'minimal', 'elegant', 'luxe'];
+  const templatePrices = templateOrder.map((id) => {
+    const model = pricingModels.find((m) => m.template === id);
+    const name = id.charAt(0).toUpperCase() + id.slice(1);
+    return {
+      id,
+      name,
+      amount: model != null ? Number(model.amount) : portfolioPrice.amount,
+      currency: model?.currency ?? portfolioPrice.currency,
+    };
+  });
+
+  useEffect(() => {
+    pricingApi.getPublic().then(setPricingData).catch(() => setPricingData(null));
+  }, []);
 
   const [formData, setFormData] = useState({
     first_name: '',
@@ -103,17 +122,21 @@ const Register = () => {
             </p>
           </div>
 
-          {/* Price badge */}
-          <div className={`mb-6 p-3 rounded-xl text-center ${
-            isDarkMode ? 'bg-gray-800 border border-gray-700' : 'bg-gray-50 border border-gray-200'
-          }`}>
-            <span className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-              Prix unique :
-            </span>
-            <span className="text-red-500 font-semibold ml-1">2 500 FCFA</span>
-            <span className={`text-xs ml-2 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-              (Accès à vie)
-            </span>
+          {/* Prix par template (Classic, Minimal, Elegant, Luxe) */}
+          <div className={`mb-6 p-4 rounded-xl ${isDarkMode ? 'bg-gray-800 border border-gray-700' : 'bg-gray-50 border border-gray-200'}`}>
+            <p className={`text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+              Tarifs par template
+            </p>
+            <ul className="space-y-2">
+              {templatePrices.map((t) => (
+                <li key={t.id} className="flex items-center justify-between text-sm">
+                  <span className={isDarkMode ? 'text-gray-300' : 'text-gray-700'}>{t.name}</span>
+                  <span className="text-red-500 font-semibold">
+                    {t.amount.toLocaleString('fr-FR')} {t.currency}
+                  </span>
+                </li>
+              ))}
+            </ul>
           </div>
 
           {/* Form */}

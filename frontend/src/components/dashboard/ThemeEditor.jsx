@@ -5,6 +5,7 @@ import { useTheme, themes } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { portfolioApi } from '../../api/portfolio';
 import { paymentsApi } from '../../api/payments';
+import { pricingApi, getPortfolioPrice } from '../../api/pricing';
 import toast from 'react-hot-toast';
 
 const TEMPLATES = [
@@ -443,16 +444,31 @@ const ThemeEditor = ({ portfolio, onUpdate }) => {
   const [loading, setLoading] = useState(false);
   const [payPublishLoading, setPayPublishLoading] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
-  const [preloadTemplateId, setPreloadTemplateId] = useState(null);
   const [selectedColor, setSelectedColor] = useState(portfolio?.theme_color || 'cyan');
   const [selectedMode, setSelectedMode] = useState(portfolio?.theme_mode || 'dark');
   const [selectedTemplate, setSelectedTemplate] = useState(portfolio?.template || 'classic');
+  const [pricingData, setPricingData] = useState(null);
+
+  const pricingModels = pricingData?.data ?? [];
+  const portfolioPrice = getPortfolioPrice(pricingData);
+  const templatePrices = TEMPLATES.map((t) => {
+    const model = pricingModels.find((m) => m.template === t.id);
+    return {
+      ...t,
+      amount: model != null ? Number(model.amount) : portfolioPrice.amount,
+      currency: model?.currency ?? portfolioPrice.currency,
+      formatted: model != null
+        ? `${Number(model.amount).toLocaleString('fr-FR')} ${model.currency}`
+        : portfolioPrice.formatted,
+    };
+  });
+
+  useEffect(() => {
+    pricingApi.getPublic().then(setPricingData).catch(() => setPricingData(null));
+  }, []);
 
   // Build preview URL (uses authenticated preview route)
   const portfolioUrl = `${window.location.origin}/p/preview`;
-  const preloadUrl = preloadTemplateId
-    ? `${portfolioUrl}?preview=1&template=${preloadTemplateId}&color=${portfolio?.theme_color || 'cyan'}&mode=${portfolio?.theme_mode || 'dark'}&t=preload`
-    : null;
 
   // Thème rouge fixe pour le dashboard
   const dashboardTheme = {
@@ -533,16 +549,6 @@ const ThemeEditor = ({ portfolio, onUpdate }) => {
 
   return (
     <div className="relative space-y-6">
-      {/* Préchargement au survol pour ouvrir le template plus vite au clic */}
-      {preloadUrl && (
-        <iframe
-          src={preloadUrl}
-          title="Préchargement"
-          className="absolute w-0 h-0 opacity-0 pointer-events-none overflow-hidden"
-          aria-hidden="true"
-        />
-      )}
-
       {/* Header Section */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -625,18 +631,16 @@ const ThemeEditor = ({ portfolio, onUpdate }) => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {TEMPLATES.map((tpl) => {
+          {templatePrices.map((tpl) => {
             const Icon = tpl.icon;
             const isCurrent = portfolio?.template === tpl.id;
             const accent = tpl.accent || '#ef4444';
             return (
-              <motion.button
+              <button
                 key={tpl.id}
                 type="button"
                 onClick={() => handleTemplateSelect(tpl.id)}
-                onMouseEnter={() => setPreloadTemplateId(tpl.id)}
-                onMouseLeave={() => setPreloadTemplateId(null)}
-                className={`relative text-left p-5 rounded-xl border-2 transition-all overflow-hidden group ${
+                className={`relative text-left p-5 rounded-xl border-2 overflow-hidden group w-full ${
                   isCurrent
                     ? isDarkMode
                       ? 'border-red-500 bg-red-500/10 shadow-lg shadow-red-500/20'
@@ -645,22 +649,27 @@ const ThemeEditor = ({ portfolio, onUpdate }) => {
                       ? 'border-gray-700 bg-gray-800/50 hover:border-gray-600 hover:shadow-md'
                       : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-md'
                 }`}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                style={{
+                  minHeight: '220px',
+                  transition: 'border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease',
+                }}
               >
-                {/* Bande accent en haut */}
+                {/* Bande accent en haut - hauteur fixe */}
                 <div
                   className="absolute top-0 left-0 right-0 h-1"
                   style={{ backgroundColor: accent }}
                 />
-                {isCurrent && (
-                  <div className="absolute top-3 right-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-500 text-white text-xs font-medium">
-                    <span className="w-1.5 h-1.5 rounded-full bg-white/80 animate-pulse" />
-                    Actuel
-                  </div>
-                )}
+                {/* Emplacement fixe pour le badge "Actuel" (évite tout décalage) */}
+                <div className="absolute top-3 right-3 w-[70px] h-6 flex items-center justify-end">
+                  {isCurrent && (
+                    <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-500 text-white text-xs font-medium">
+                      <span className="w-1.5 h-1.5 rounded-full bg-white/80 animate-pulse" />
+                      Actuel
+                    </span>
+                  )}
+                </div>
                 <div
-                  className={`w-12 h-12 rounded-xl flex items-center justify-center mb-3 transition-all ${
+                  className={`w-12 h-12 rounded-xl flex items-center justify-center mb-3 ${
                     isCurrent
                       ? ''
                       : isDarkMode
@@ -671,7 +680,7 @@ const ThemeEditor = ({ portfolio, onUpdate }) => {
                 >
                   <Icon className="text-xl" />
                 </div>
-                <h3 className={`font-bold text-base mb-1 transition-colors ${
+                <h3 className={`font-bold text-base mb-1 ${
                   isCurrent
                     ? 'text-red-500'
                     : isDarkMode
@@ -683,15 +692,19 @@ const ThemeEditor = ({ portfolio, onUpdate }) => {
                 <p className={`text-sm leading-relaxed ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                   {tpl.description}
                 </p>
-                {!isCurrent && (
-                  <span className={`mt-3 inline-flex items-center gap-1 text-xs font-medium ${
-                    isDarkMode ? 'text-gray-500 group-hover:text-gray-400' : 'text-gray-400 group-hover:text-gray-600'
-                  }`}>
-                    Cliquer pour prévisualiser
-                    <FaExternalLinkAlt className="text-[10px] opacity-60" />
+                <p className={`mt-2 text-sm font-semibold ${isCurrent ? 'text-red-500' : isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                  {tpl.formatted}
+                  <span className={`text-xs font-normal ml-1 ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+                    / 1 an
                   </span>
-                )}
-              </motion.button>
+                </p>
+                <p className={`mt-3 text-xs font-medium min-h-[1.25rem] ${
+                  isCurrent ? 'invisible' : isDarkMode ? 'text-gray-500 group-hover:text-gray-400' : 'text-gray-400 group-hover:text-gray-600'
+                }`}>
+                  Cliquer pour prévisualiser
+                  <FaExternalLinkAlt className="inline-block ml-1 text-[10px] opacity-60" />
+                </p>
+              </button>
             );
           })}
         </div>

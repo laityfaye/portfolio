@@ -45,6 +45,23 @@ class AdminPortfolioController extends Controller
         return new PortfolioResource($portfolio);
     }
 
+    /** Mettre à jour le prix (montant et devise) d'un portfolio. */
+    public function update(Request $request, Portfolio $portfolio): JsonResponse
+    {
+        $validated = $request->validate([
+            'amount' => 'required|numeric|min:0',
+            'currency' => 'nullable|string|max:10',
+        ]);
+        $portfolio->update([
+            'amount' => $validated['amount'],
+            'currency' => $validated['currency'] ?? $portfolio->currency ?? 'FCFA',
+        ]);
+        return response()->json([
+            'message' => 'Prix du portfolio mis à jour.',
+            'portfolio' => new PortfolioResource($portfolio->fresh()),
+        ]);
+    }
+
     public function publish(Portfolio $portfolio): JsonResponse
     {
         // Check if user is active

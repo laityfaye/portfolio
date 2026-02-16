@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\PaymentResource;
+use App\Models\PricingModel;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -27,29 +28,34 @@ class PaymentController extends Controller
 
         $user = $request->user();
 
-        // Check if user already has a pending or approved payment
         $existingPayment = $user->payments()
             ->whereIn('status', ['pending', 'approved'])
             ->first();
 
         if ($existingPayment) {
-            if ($existingPayment->isApproved()) {
+            if ($existingPayment->isPending()) {
                 return response()->json([
-                    'message' => 'Votre paiement a deja ete approuve',
+                    'message' => 'Vous avez deja une preuve de paiement en attente de validation',
                 ], 400);
             }
-
-            return response()->json([
-                'message' => 'Vous avez deja une preuve de paiement en attente de validation',
-            ], 400);
+            // Paiement déjà approuvé : autoriser un nouveau seulement si le portfolio est expiré (renouvellement)
+            if ($existingPayment->isApproved() && !$user->portfolio?->isExpired()) {
+                return response()->json([
+                    'message' => 'Votre paiement a deja ete approuve et votre portfolio est en ligne',
+                ], 400);
+            }
         }
 
         $path = $request->file('proof')->store('payments/' . $user->id, 'public');
 
+        $portfolio = $user->portfolio;
+        $amount = $portfolio ? $portfolio->getPriceAmount() : (float) PricingModel::getPortfolioYearlyAmount();
+        $currency = $portfolio ? $portfolio->getPriceCurrency() : (PricingModel::getBySlug('portfolio_1y')?->currency ?? 'FCFA');
+
         $payment = $user->payments()->create([
             'proof_image' => $path,
-            'amount' => 2500,
-            'currency' => 'FCFA',
+            'amount' => $amount,
+            'currency' => $currency,
             'status' => 'pending',
             'type' => 'manual',
         ]);

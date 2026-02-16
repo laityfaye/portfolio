@@ -279,7 +279,7 @@ const Dashboard = () => {
 
         {/* Sidebar Footer */}
         <div className={`p-4 flex-shrink-0 border-t ${isDarkMode ? 'border-gray-800' : 'border-gray-100'}`}>
-          {isActive && portfolio?.status === 'published' && (
+          {isActive && portfolio?.is_online && (
             <a
               href={`/p/${user?.slug}`}
               target="_blank"
@@ -401,7 +401,7 @@ const Dashboard = () => {
               <Route path="theme" element={<ThemeEditor portfolio={portfolio} onUpdate={refreshPortfolio} />} />
               <Route path="payment/success" element={<PaymentSuccess />} />
               <Route path="payment/cancel" element={<PaymentCancel />} />
-              <Route path="payment" element={<PaymentStatus user={user} />} />
+              <Route path="payment" element={<PaymentStatus user={user} portfolio={portfolio} />} />
             </Routes>
           </div>
         </div>

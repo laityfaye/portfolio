@@ -7,6 +7,7 @@ use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Resources\UserResource;
 use App\Models\Portfolio;
+use App\Models\PricingModel;
 use App\Models\User;
 use App\Services\SlugService;
 use Illuminate\Http\JsonResponse;
@@ -36,7 +37,8 @@ class AuthController extends Controller
             'status' => 'pending',
         ]);
 
-        // Create empty portfolio
+        // Create empty portfolio (amount/currency laissés à null : le prix sera déduit
+        // automatiquement du modèle de portfolio choisi par le client lors du paiement)
         Portfolio::create([
             'user_id' => $user->id,
             'display_name' => $request->first_name . ' ' . $request->last_name,

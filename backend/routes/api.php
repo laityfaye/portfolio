@@ -12,13 +12,16 @@ use App\Http\Controllers\Api\Admin\AdminDashboardController;
 use App\Http\Controllers\Api\Admin\AdminUserController;
 use App\Http\Controllers\Api\Admin\AdminPaymentController;
 use App\Http\Controllers\Api\Admin\AdminPortfolioController;
+use App\Http\Controllers\Api\Admin\AdminPricingController;
 use App\Http\Controllers\Api\PayTechController;
+use App\Http\Controllers\Api\PublicPricingController;
 use Illuminate\Support\Facades\Route;
 
 // Public routes
 Route::prefix('public')->group(function () {
     Route::get('/portfolio/{slug}', [PublicPortfolioController::class, 'show']);
     Route::post('/portfolio/{slug}/contact', [PublicPortfolioController::class, 'contact']);
+    Route::get('/pricing', [PublicPricingController::class, 'index']);
     Route::get('/sitemap.xml', [SitemapController::class, 'index']);
 });
 
@@ -101,7 +104,12 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'admin'])->group(function ()
     Route::get('/portfolios', [AdminPortfolioController::class, 'index']);
     Route::get('/portfolios/stats', [AdminPortfolioController::class, 'stats']);
     Route::get('/portfolios/{portfolio}', [AdminPortfolioController::class, 'show']);
+    Route::put('/portfolios/{portfolio}', [AdminPortfolioController::class, 'update']);
     Route::post('/portfolios/{portfolio}/publish', [AdminPortfolioController::class, 'publish']);
     Route::post('/portfolios/{portfolio}/unpublish', [AdminPortfolioController::class, 'unpublish']);
     Route::delete('/portfolios/{portfolio}', [AdminPortfolioController::class, 'destroy']);
+
+    // Tarification (modèles de prix)
+    Route::get('/pricing-models', [AdminPricingController::class, 'index']);
+    Route::put('/pricing-models/{pricingModel}', [AdminPricingController::class, 'update']);
 });

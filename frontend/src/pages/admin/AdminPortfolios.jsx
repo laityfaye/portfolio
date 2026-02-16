@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { FaSearch, FaGlobe, FaEyeSlash, FaTrash, FaExternalLinkAlt, FaFilter, FaSun, FaMoon } from 'react-icons/fa';
+import { FaSearch, FaGlobe, FaEyeSlash, FaTrash, FaExternalLinkAlt, FaFilter, FaSun, FaMoon, FaEdit, FaTag } from 'react-icons/fa';
 import { adminPortfoliosApi } from '../../api/admin';
 import { getProfileImageUrl, getPublicImageUrl } from '../../utils/imageUtils';
 import toast from 'react-hot-toast';
@@ -11,6 +11,10 @@ const AdminPortfolios = () => {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [pagination, setPagination] = useState(null);
+  const [priceModal, setPriceModal] = useState(null);
+  const [editAmount, setEditAmount] = useState('');
+  const [editCurrency, setEditCurrency] = useState('FCFA');
+  const [savingPrice, setSavingPrice] = useState(false);
 
   useEffect(() => {
     fetchPortfolios();
@@ -68,6 +72,42 @@ const AdminPortfolios = () => {
     } catch (error) {
       toast.error('Erreur lors de la suppression');
     }
+  };
+
+  const openPriceModal = (portfolio) => {
+    setPriceModal(portfolio);
+    setEditAmount(portfolio.amount != null ? String(portfolio.amount) : '2500');
+    setEditCurrency(portfolio.currency || 'FCFA');
+  };
+
+  const closePriceModal = () => {
+    setPriceModal(null);
+  };
+
+  const handleSavePrice = async () => {
+    if (!priceModal) return;
+    const amount = parseFloat(editAmount);
+    if (isNaN(amount) || amount < 0) {
+      toast.error('Montant invalide');
+      return;
+    }
+    setSavingPrice(true);
+    try {
+      await adminPortfoliosApi.update(priceModal.id, { amount, currency: editCurrency || 'FCFA' });
+      toast.success('Prix mis a jour');
+      closePriceModal();
+      fetchPortfolios();
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Erreur lors de la mise a jour du prix');
+    } finally {
+      setSavingPrice(false);
+    }
+  };
+
+  const formatPrice = (portfolio) => {
+    const a = portfolio.amount != null ? Number(portfolio.amount) : 2500;
+    const c = portfolio.currency || 'FCFA';
+    return `${a.toLocaleString('fr-FR')} ${c}`;
   };
 
   const getStatusBadge = (status) => {
@@ -163,6 +203,7 @@ const AdminPortfolios = () => {
                   <th className="text-left py-2 sm:py-3 px-2 sm:px-4 text-slate-400 font-medium text-xs sm:text-sm">Portfolio</th>
                   <th className="text-left py-2 sm:py-3 px-2 sm:px-4 text-slate-400 font-medium text-xs sm:text-sm hidden md:table-cell">Proprietaire</th>
                   <th className="text-left py-2 sm:py-3 px-2 sm:px-4 text-slate-400 font-medium text-xs sm:text-sm hidden lg:table-cell">Theme</th>
+                  <th className="text-left py-2 sm:py-3 px-2 sm:px-4 text-slate-400 font-medium text-xs sm:text-sm">Prix</th>
                   <th className="text-left py-2 sm:py-3 px-2 sm:px-4 text-slate-400 font-medium text-xs sm:text-sm">Statut</th>
                   <th className="text-right py-2 sm:py-3 px-2 sm:px-4 text-slate-400 font-medium text-xs sm:text-sm">Actions</th>
                 </tr>
@@ -170,7 +211,7 @@ const AdminPortfolios = () => {
               <tbody className="divide-y divide-slate-700">
                 {portfolios.length === 0 ? (
                   <tr>
-                    <td colSpan="5" className="py-8 text-center text-slate-400 text-sm">
+                    <td colSpan="6" className="py-8 text-center text-slate-400 text-sm">
                       Aucun portfolio trouve
                     </td>
                   </tr>
@@ -215,6 +256,18 @@ const AdminPortfolios = () => {
                           ) : (
                             <FaSun className="text-yellow-400 text-xs sm:text-sm" />
                           )}
+                        </div>
+                      </td>
+                      <td className="py-2 sm:py-3 px-2 sm:px-4">
+                        <div className="flex items-center gap-2">
+                          <span className="text-green-400 font-semibold text-xs sm:text-sm">{formatPrice(portfolio)}</span>
+                          <button
+                            onClick={() => openPriceModal(portfolio)}
+                            className="p-1.5 text-slate-400 hover:text-cyan-400 hover:bg-cyan-500/10 rounded-lg transition-colors"
+                            title="Modifier le prix"
+                          >
+                            <FaEdit className="text-xs" />
+                          </button>
                         </div>
                       </td>
                       <td className="py-2 sm:py-3 px-2 sm:px-4">{getStatusBadge(portfolio.status)}</td>
@@ -287,6 +340,62 @@ const AdminPortfolios = () => {
                 Suivant
               </button>
             </div>
+          </div>
+        )}
+
+        {/* Modal Prix */}
+        {priceModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60" onClick={closePriceModal}>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-slate-800 rounded-xl border border-slate-600 p-6 w-full max-w-sm shadow-xl"
+            >
+              <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                <FaTag className="text-cyan-400" />
+                Prix du portfolio
+              </h3>
+              <p className="text-slate-400 text-sm mb-4">{priceModal.display_name}</p>
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <div>
+                  <label className="block text-slate-400 text-xs mb-1">Montant</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={editAmount}
+                    onChange={(e) => setEditAmount(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white focus:ring-2 focus:ring-cyan-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-400 text-xs mb-1">Devise</label>
+                  <input
+                    type="text"
+                    value={editCurrency}
+                    onChange={(e) => setEditCurrency(e.target.value)}
+                    placeholder="FCFA"
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white focus:ring-2 focus:ring-cyan-500"
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end gap-2">
+                <button
+                  onClick={closePriceModal}
+                  className="px-4 py-2 text-slate-400 hover:text-white rounded-lg"
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={handleSavePrice}
+                  disabled={savingPrice}
+                  className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg font-medium disabled:opacity-50"
+                >
+                  {savingPrice ? 'Enregistrement...' : 'Enregistrer'}
+                </button>
+              </div>
+            </motion.div>
           </div>
         )}
       </motion.div>
