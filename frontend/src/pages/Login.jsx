@@ -150,6 +150,11 @@ const Login = () => {
                   {showPassword ? <FaEyeSlash className="text-sm" /> : <FaEye className="text-sm" />}
                 </button>
               </div>
+              <div className="flex justify-end">
+                <Link to="/forgot-password" className="text-sm text-red-500 hover:text-red-600 font-medium">
+                  Mot de passe oublié ?
+                </Link>
+              </div>
             </div>
 
             {/* Submit */}

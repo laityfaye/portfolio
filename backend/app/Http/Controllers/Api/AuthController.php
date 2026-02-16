@@ -12,7 +12,10 @@ use App\Models\User;
 use App\Services\SlugService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -106,5 +109,87 @@ class AuthController extends Controller
         return response()->json([
             'user' => new UserResource($request->user()->load('portfolio', 'payments')),
         ]);
+    }
+
+    /** Demande de réinitialisation du mot de passe (envoi du lien par email). */
+    public function forgotPassword(Request $request): JsonResponse
+    {
+        $request->validate(['email' => 'required|email']);
+
+        $email = $request->email;
+        $user = User::where('email', $email)->first();
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'Si cet email existe, un lien de réinitialisation vous a été envoyé.',
+            ], 200);
+        }
+
+        $token = Str::random(64);
+
+        DB::table('password_reset_tokens')->updateOrInsert(
+            ['email' => $email],
+            ['token' => Hash::make($token), 'created_at' => now()]
+        );
+
+        $resetUrl = rtrim(config('app.frontend_url'), '/') . '/p/reset-password?token=' . urlencode($token) . '&email=' . urlencode($email);
+
+        try {
+            Mail::raw(
+                "Bonjour,\n\nVous avez demandé à réinitialiser votre mot de passe.\n\nCliquez sur le lien suivant (valide 1 heure) :\n{$resetUrl}\n\nSi vous n'êtes pas à l'origine de cette demande, ignorez cet email.",
+                function ($message) use ($email) {
+                    $message->to($email)->subject('Réinitialisation de votre mot de passe - InnoSoft');
+                }
+            );
+        } catch (\Throwable $e) {
+            report($e);
+            return response()->json([
+                'message' => 'Impossible d\'envoyer l\'email. Réessayez plus tard.',
+            ], 500);
+        }
+
+        return response()->json([
+            'message' => 'Si cet email existe, un lien de réinitialisation vous a été envoyé.',
+        ], 200);
+    }
+
+    /** Réinitialisation du mot de passe avec le token reçu par email. */
+    public function resetPassword(Request $request): JsonResponse
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'token' => 'required|string',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $email = $request->email;
+        $token = $request->token;
+
+        $record = DB::table('password_reset_tokens')->where('email', $email)->first();
+        if (!$record || !Hash::check($token, $record->token)) {
+            return response()->json([
+                'message' => 'Lien invalide ou expiré. Demandez un nouveau lien.',
+            ], 400);
+        }
+
+        $createdAt = $record->created_at ? \Carbon\Carbon::parse($record->created_at) : null;
+        if ($createdAt && $createdAt->copy()->addMinutes(60)->isPast()) {
+            DB::table('password_reset_tokens')->where('email', $email)->delete();
+            return response()->json([
+                'message' => 'Ce lien a expiré. Demandez un nouveau lien.',
+            ], 400);
+        }
+
+        $user = User::where('email', $email)->first();
+        if (!$user) {
+            return response()->json(['message' => 'Utilisateur introuvable.'], 404);
+        }
+
+        $user->update(['password' => Hash::make($request->password)]);
+        DB::table('password_reset_tokens')->where('email', $email)->delete();
+
+        return response()->json([
+            'message' => 'Mot de passe mis à jour. Vous pouvez vous connecter.',
+        ], 200);
     }
 }

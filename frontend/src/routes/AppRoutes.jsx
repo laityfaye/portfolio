@@ -9,6 +9,8 @@ import AdminProtectedRoute from './AdminProtectedRoute';
 // Pages
 import Home from '../pages/Home';
 import Login from '../pages/Login';
+import ForgotPassword from '../pages/ForgotPassword';
+import ResetPassword from '../pages/ResetPassword';
 import Register from '../pages/Register';
 import Dashboard from '../pages/Dashboard';
 import Portfolio from '../pages/Portfolio';
@@ -39,6 +41,8 @@ const AppRoutes = () => {
               {/* Public Routes */}
               <Route path="/" element={<Home />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/register" element={<Register />} />
               <Route path="/preview" element={<PortfolioPreview />} />
               <Route path="/demo" element={<PortfolioDemo />} />
